@@ -1,21 +1,4 @@
 
-final static int MAX_FILTERS = 9; // number of filters here, used for randomization, update every new filter
-public AFilter createFilter(int type, Piper previous, float srate) { //FIXME: make this automagic through reflection
-  switch(type) {
-    case DJEQ: return new DjEq(previous, srate);
-    case COMB: return new Comb(previous, srate);
-    case VYNIL: return new Vynil(previous, srate);
-    case CANYONDELAY: return new CanyonDelay(previous, srate);
-    case VCF303: return new Vcf303(previous, srate);
-    case ECHO: return new AuEcho(previous, srate);
-    case PHASER: return new AuPhaser(previous, srate);
-    case WAHWAH: return new AuWahwah(previous, srate);
-    case BASSTREBLE: return new AuBassTreble(previous, srate);
-    case SHIFTR: return new TShiftR(previous, srate);
-    default: return new Empty(previous, srate); 
-  }
-}
-
 abstract class AFilter implements Piper {
   public float srate;
   public float rsrate;

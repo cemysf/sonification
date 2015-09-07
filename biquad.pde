@@ -1,3 +1,5 @@
+// code taken from https://github.com/swh/ladspa/blob/master/util/biquad.h
+
 final static float LN_2_2 = log(2.0)/2.0;
 final static float LN2 = log(2.0);
 

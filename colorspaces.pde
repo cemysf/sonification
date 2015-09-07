@@ -1,27 +1,4 @@
-
-// # of colorspaces
-final static int MAX_COLORSPACES = 2;
-// colorspaces, NONE: RGB
-final static int OHTA = 1001;
-final static int CMY = 1002;
-
-// colorspace converters
-color fromColorspace(color c, int cs) {
-  switch(cs) {
-    case OHTA: return fromOHTA(c);
-    case CMY: return fromCMY(c); 
-    default: return c;     
-  }
-}
-
-color toColorspace(color c, int cs) {
-  switch(cs) {
-    case OHTA: return toOHTA(c); 
-    case CMY: return toCMY(c);
-    default: return c;     
-  }
-}
-
+// Colorspace converters
 
 final int getR(color c) { return (c & 0xff0000) >> 16; }
 final int getG(color c) { return (c & 0xff00) >> 8; }

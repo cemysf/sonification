@@ -1,3 +1,6 @@
+// image->raw->audio and audio->raw->image functions
+// helper function to pipe filters
+
 public interface Piper {
   public float read();
 }

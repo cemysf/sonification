@@ -1,4 +1,5 @@
 /* the classes in this file all direct ports of audacity stuff, so GPL */
+
 public class AuPhaser extends AFilter {
   float gain, fbout, lfoskip, phase;
 

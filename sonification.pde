@@ -25,7 +25,7 @@ boolean make_equalize = true; // equalize and normalize histogram
 // image reader config
 int r_rawtype = PLANAR; // planar: rrrrr...ggggg....bbbbb; interleaved: rgbrgbrgb...
 int r_law = NONE; // NONE, A_LAW, U_LAW
-int r_sign = SIGNED; // SIGNED or UNSIGNED
+int r_sign = UNSIGNED; // SIGNED or UNSIGNED
 int r_bits = B8; // B8, B16 or B24, bits per sample
 int r_endianess = LITTLE_ENDIAN; // BIG_ENDIAN or LITTLE_ENDIAN
 int r_colorspace = RGB; // list below 
@@ -33,23 +33,24 @@ int r_colorspace = RGB; // list below
 // image writer config
 int w_rawtype = PLANAR; // planar: rrrrr...ggggg....bbbbb; interleaved: rgbrgbrgb...
 int w_law = NONE; // NONE, A_LAW, U_LAW
-int w_sign = SIGNED; // SIGNED or UNSIGNED
+int w_sign = UNSIGNED; // SIGNED or UNSIGNED
 int w_bits = B8; // B8, B16 or B24, bits per sample
 int w_endianess = LITTLE_ENDIAN; // BIG_ENDIAN or LITTLE_ENDIAN
 int w_colorspace = RGB; // list below
 
 // put list of the filters { name, sample rate }
 float[][] filters = {
-  { DJEQ, 44100.0 },
-  { ECHO, 31000.0 },
-  { VYNIL, 43100.0},
-  { BASSTREBLE, 24100.0 },
-  { ECHO, 12000.0 },
-  { COMB, 24410.0 }, 
+ // { DJEQ, 44100.0 },
+ // { ECHO, 31000.0 },
+ // { VYNIL, 43100.0},
+ // { BASSTREBLE, 24100.0 },
+ // { ECHO, 12000.0 },
+ // { COMB, 24410.0 }, 
   { SHIFTR, 44100.0 }
 };
 
 // EFFECTS!
+final static int NOFILTER = -1;
 final static int DJEQ = 0;
 final static int COMB = 1;
 final static int VYNIL = 2;
@@ -60,6 +61,10 @@ final static int PHASER = 6;
 final static int WAHWAH = 7;
 final static int BASSTREBLE = 8; 
 final static int SHIFTR = 9;
+
+// colorspaces, NONE: RGB
+final static int OHTA = 1001;
+final static int CMY = 1002;
 
 // configuration constants
 final static int A_LAW = 0;
