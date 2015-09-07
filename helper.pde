@@ -22,13 +22,14 @@ public AFilter createFilter(int type, Piper previous, float srate) { //FIXME: ma
 }
 
 // # of colorspaces
-final static int MAX_COLORSPACES = 2;
+final static int MAX_COLORSPACES = 3;
 
 // colorspace converters
 color fromColorspace(color c, int cs) {
   switch(cs) {
     case OHTA: return fromOHTA(c);
     case CMY: return fromCMY(c); 
+    case XYZ: return fromXYZ(c);
     default: return c;     
   }
 }
@@ -37,10 +38,24 @@ color toColorspace(color c, int cs) {
   switch(cs) {
     case OHTA: return toOHTA(c); 
     case CMY: return toCMY(c);
+    case XYZ: return toXYZ(c);
     default: return c;     
   }
 }
 
+// fucking const to name
+// TODO all consts
+
+String getCSName(int cs) {
+  switch(cs) {
+    case OHTA: return "OHTA"; 
+    case CMY: return "CMY";
+    case XYZ: return "XYZ";
+    case RGB: return "RGB";
+    case 1000: return "RGB";
+    default: return "unknown!";     
+  }
+}
 
 final float cosh(float x) {
   return 0.5 * (exp(x) + exp(-x));

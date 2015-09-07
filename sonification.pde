@@ -20,7 +20,7 @@ int max_display_size = 800; // viewing window size (regardless image size)
 boolean do_blend = false; // blend image after process
 int blend_mode = OVERLAY; // blend type
 
-boolean make_equalize = true; // equalize and normalize histogram
+boolean make_equalize = false; // equalize and normalize histogram
 
 // image reader config
 int r_rawtype = PLANAR; // planar: rrrrr...ggggg....bbbbb; interleaved: rgbrgbrgb...
@@ -28,7 +28,7 @@ int r_law = NONE; // NONE, A_LAW, U_LAW
 int r_sign = UNSIGNED; // SIGNED or UNSIGNED
 int r_bits = B8; // B8, B16 or B24, bits per sample
 int r_endianess = LITTLE_ENDIAN; // BIG_ENDIAN or LITTLE_ENDIAN
-int r_colorspace = RGB; // list below 
+int r_colorspace = XYZ; // list below 
 
 // image writer config
 int w_rawtype = PLANAR; // planar: rrrrr...ggggg....bbbbb; interleaved: rgbrgbrgb...
@@ -36,10 +36,11 @@ int w_law = NONE; // NONE, A_LAW, U_LAW
 int w_sign = UNSIGNED; // SIGNED or UNSIGNED
 int w_bits = B8; // B8, B16 or B24, bits per sample
 int w_endianess = LITTLE_ENDIAN; // BIG_ENDIAN or LITTLE_ENDIAN
-int w_colorspace = RGB; // list below
+int w_colorspace = XYZ; // list below
 
 // put list of the filters { name, sample rate }
 float[][] filters = {
+  { NOFILTER, 44100.0 },
  // { DJEQ, 44100.0 },
  // { ECHO, 31000.0 },
  // { VYNIL, 43100.0},
@@ -65,6 +66,7 @@ final static int SHIFTR = 9;
 // colorspaces, NONE: RGB
 final static int OHTA = 1001;
 final static int CMY = 1002;
+final static int XYZ = 1003;
 
 // configuration constants
 final static int A_LAW = 0;
@@ -164,14 +166,14 @@ void randomizeFilters() {
 
 // TODO: print settings
 void randomizeRaw() {
-  boolean keepsame = random(1)<0.75;
+  boolean keepsame = random(1)<0.65;
   int rawtype = random(1)<0.5?INTERLEAVED:PLANAR;
   int law = random(1)<0.334?NONE:random(1)<0.5?A_LAW:U_LAW;
   int sign = random(1)<0.5?SIGNED:UNSIGNED;
   int bits = random(1)<0.334?B8:random(1)<0.5?B16:B24;
   int endian = random(1)<0.5?BIG_ENDIAN:LITTLE_ENDIAN;
   w_colorspace = r_colorspace = (int)(1000+random(MAX_COLORSPACES+1));
-  println("r_colorspace = " + r_colorspace);
+  println("r_colorspace = " + getCSName(r_colorspace));
   isr = new RawReader(img.get(), rawtype, law, sign, bits, endian);
   isr.r.convertColorspace(r_colorspace);
   if(!keepsame) {
@@ -182,7 +184,7 @@ void randomizeRaw() {
     endian = random(1)<0.5?BIG_ENDIAN:LITTLE_ENDIAN;
     w_colorspace = (int)(1000+random(MAX_COLORSPACES+1));
   }
-  println("w_colorspace = " + w_colorspace);
+  println("w_colorspace = " + getCSName(w_colorspace));
   isw = new RawWriter(img.get(), rawtype, law, sign, bits, endian);
   prepareFilters(filters);
   resetStreams();
