@@ -1,6 +1,7 @@
 // Sonification, image as sound
 // Reimplementation of image -> raw -> wav -> audacity filters -> wav -> raw -> image process
 // Tomasz Sulej, generateme.blog@gmail.com, http://generateme.tumblr.com
+// Bob Verkouteren, bob.verkouteren@gmail.com, http://applesandchickens.com 
 // Licence: http://unlicense.org/
 
 // Usage:
@@ -57,7 +58,7 @@ final static int VCF303 = 4;
 final static int ECHO = 5; 
 final static int PHASER = 6;
 final static int WAHWAH = 7;
-final static int BASSTREBLE = 8; //FIXME: make dynamic
+final static int BASSTREBLE = 8; 
 final static int SHIFTR = 9;
 
 // configuration constants
