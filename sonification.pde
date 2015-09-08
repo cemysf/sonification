@@ -20,7 +20,7 @@ int max_display_size = 800; // viewing window size (regardless image size)
 boolean do_blend = false; // blend image after process
 int blend_mode = OVERLAY; // blend type
 
-boolean make_equalize = false; // equalize and normalize histogram
+boolean make_equalize = true; // equalize and normalize histogram
 
 // image reader config
 int r_rawtype = PLANAR; // planar: rrrrr...ggggg....bbbbb; interleaved: rgbrgbrgb...
@@ -36,7 +36,7 @@ int w_law = NONE; // NONE, A_LAW, U_LAW
 int w_sign = UNSIGNED; // SIGNED or UNSIGNED
 int w_bits = B8; // B8, B16 or B24, bits per sample
 int w_endianess = LITTLE_ENDIAN; // BIG_ENDIAN or LITTLE_ENDIAN
-int w_colorspace = XYZ; // list below
+int w_colorspace = YXY; // list below
 
 // put list of the filters { name, sample rate }
 float[][] filters = {
@@ -47,7 +47,7 @@ float[][] filters = {
  // { BASSTREBLE, 24100.0 },
  // { ECHO, 12000.0 },
  // { COMB, 24410.0 }, 
-  { SHIFTR, 44100.0 }
+ // { SHIFTR, 44100.0 }
 };
 
 // EFFECTS!
@@ -67,6 +67,7 @@ final static int SHIFTR = 9;
 final static int OHTA = 1001;
 final static int CMY = 1002;
 final static int XYZ = 1003;
+final static int YXY = 1004;
 
 // configuration constants
 final static int A_LAW = 0;
