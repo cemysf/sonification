@@ -20,23 +20,23 @@ int max_display_size = 800; // viewing window size (regardless image size)
 boolean do_blend = false; // blend image after process
 int blend_mode = OVERLAY; // blend type
 
-boolean make_equalize = true; // equalize and normalize histogram
+boolean make_equalize = false; // equalize and normalize histogram
 
 // image reader config
-int r_rawtype = PLANAR; // planar: rrrrr...ggggg....bbbbb; interleaved: rgbrgbrgb...
+int r_rawtype = INTERLEAVED; // planar: rrrrr...ggggg....bbbbb; interleaved: rgbrgbrgb...
 int r_law = NONE; // NONE, A_LAW, U_LAW
 int r_sign = UNSIGNED; // SIGNED or UNSIGNED
 int r_bits = B8; // B8, B16 or B24, bits per sample
 int r_endianess = LITTLE_ENDIAN; // BIG_ENDIAN or LITTLE_ENDIAN
-int r_colorspace = XYZ; // list below 
+int r_colorspace = RGB; // list below 
 
 // image writer config
-int w_rawtype = PLANAR; // planar: rrrrr...ggggg....bbbbb; interleaved: rgbrgbrgb...
+int w_rawtype = INTERLEAVED; // planar: rrrrr...ggggg....bbbbb; interleaved: rgbrgbrgb...
 int w_law = NONE; // NONE, A_LAW, U_LAW
 int w_sign = UNSIGNED; // SIGNED or UNSIGNED
 int w_bits = B8; // B8, B16 or B24, bits per sample
 int w_endianess = LITTLE_ENDIAN; // BIG_ENDIAN or LITTLE_ENDIAN
-int w_colorspace = YXY; // list below
+int w_colorspace = LUV; // list below
 
 // put list of the filters { name, sample rate }
 float[][] filters = {
@@ -68,6 +68,8 @@ final static int OHTA = 1001;
 final static int CMY = 1002;
 final static int XYZ = 1003;
 final static int YXY = 1004;
+final static int HCL = 1005;
+final static int LUV = 1006;
 
 // configuration constants
 final static int A_LAW = 0;
@@ -131,6 +133,12 @@ void setup() {
 
   prepareFilters(filters);
   
+//  color tt = color(22,122,222);
+//  color _luv = toLUV(tt);
+//  println( getR(_luv) + "," + getG(_luv) + "," + getB(_luv));
+//  _luv = fromLUV(_luv);
+//  println( getR(_luv) + "," + getG(_luv) + "," + getB(_luv));
+  
   processImage();
 }
 
@@ -167,7 +175,7 @@ void randomizeFilters() {
 
 // TODO: print settings
 void randomizeRaw() {
-  boolean keepsame = random(1)<0.65;
+  boolean keepsame = random(1)<0.5;
   int rawtype = random(1)<0.5?INTERLEAVED:PLANAR;
   int law = random(1)<0.334?NONE:random(1)<0.5?A_LAW:U_LAW;
   int sign = random(1)<0.5?SIGNED:UNSIGNED;
@@ -178,10 +186,10 @@ void randomizeRaw() {
   isr = new RawReader(img.get(), rawtype, law, sign, bits, endian);
   isr.r.convertColorspace(r_colorspace);
   if(!keepsame) {
-    rawtype = random(1)<0.5?INTERLEAVED:PLANAR;
+    rawtype = random(1)<0.5 ? (random(1)<0.5?INTERLEAVED:PLANAR) : rawtype;
     law = random(1)<0.334?NONE:random(1)<0.5?A_LAW:U_LAW;
     sign = random(1)<0.5?SIGNED:UNSIGNED;
-    bits = random(1)<0.334?B8:random(1)<0.5?B16:B24;
+    bits = random(1)<0.2 ? (random(1)<0.334?B8:random(1)<0.5?B16:B24) : bits;
     endian = random(1)<0.5?BIG_ENDIAN:LITTLE_ENDIAN;
     w_colorspace = (int)(1000+random(MAX_COLORSPACES+1));
   }

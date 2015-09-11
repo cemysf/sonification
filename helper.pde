@@ -22,7 +22,7 @@ public AFilter createFilter(int type, Piper previous, float srate) { //FIXME: ma
 }
 
 // # of colorspaces
-final static int MAX_COLORSPACES = 4;
+final static int MAX_COLORSPACES = 6;
 
 // colorspace converters
 color fromColorspace(color c, int cs) {
@@ -31,6 +31,8 @@ color fromColorspace(color c, int cs) {
     case CMY: return fromCMY(c); 
     case XYZ: return fromXYZ(c);
     case YXY: return fromYXY(c);
+    case HCL: return fromHCL(c);
+    case LUV: return fromLUV(c);
     default: return c;     
   }
 }
@@ -41,6 +43,8 @@ color toColorspace(color c, int cs) {
     case CMY: return toCMY(c);
     case XYZ: return toXYZ(c);
     case YXY: return toYXY(c);
+    case HCL: return toHCL(c);
+    case LUV: return toLUV(c);
     default: return c;     
   }
 }
@@ -54,6 +58,8 @@ String getCSName(int cs) {
     case CMY: return "CMY";
     case XYZ: return "XYZ";
     case YXY: return "YXY";
+    case HCL: return "HCL";
+    case LUV: return "LUV";
     case RGB: return "RGB";
     case 1000: return "RGB";
     default: return "unknown!";     
