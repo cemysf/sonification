@@ -68,6 +68,10 @@ String getCSName(int cs) {
     default: return "unknown!";     
   }
 }
+String getLawName(int l) {  return l==2?"NONE":(l==1?"u-LAW":"A-LAW");}
+String getSignName(int s) { return s==0?"UNSIGNED":"SIGNED"; }
+String getEndianName(int e) { return e==0?"LITTLE ENDIAN":"BIG ENDIAN";}
+String getFormatName(int f) { return f==0?"PLANAR":"INTERLEAVED"; }
 
 final float cosh(float x) {
   return 0.5 * (exp(x) + exp(-x));

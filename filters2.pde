@@ -1,10 +1,11 @@
 /* the classes in this file all direct ports of audacity stuff, so GPL */
 
+// https://github.com/audacity/audacity/blob/master/src/effects/Phaser.cpp
 public class AuPhaser extends AFilter {
   float gain, fbout, lfoskip, phase;
 
   float[] old;
-  float mSampleRate = srate; //128;  // sample rate is set in AFilter
+  float mSampleRate;
   //constants
   float phaserlfoshape = 4.0;
   int lfoskipsamples = 20; //how many samples are processed before recomputing lfo
@@ -29,10 +30,21 @@ public class AuPhaser extends AFilter {
     old   = new float[mStages];
   }
 
+  public String toString() {
+    StringBuilder s = new StringBuilder();
+    s.append("numStages="+numStages);
+    s.append(", mDryWet="+mDryWet);
+    s.append(", mFreq="+mFreq);
+    s.append(", mPhase="+mPhase);
+    s.append(", mDepth="+mDepth);
+    s.append(", mFeedback="+mFeedback);
+    return s.toString();
+  }
+
   public void randomize() {
     numStages = (int)random(2,25);
     mDryWet = (int)random(256);
-    mFreq = random(0.01,4);
+    mFreq = random(0.01,40.0);
     mPhase = random(360);
     mDepth = (int)random(1,256);
     mFeedback = random(-100,100);
@@ -58,33 +70,11 @@ public class AuPhaser extends AFilter {
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// https://github.com/audacity/audacity/blob/master/src/effects/Echo.cpp
 public class AuEcho extends AFilter {
   float delay = 1.0;
   float decay = 0.5;
-  float mSampleRate = srate; // sample rate from AFilter
+  float mSampleRate;
   int histPos, histLen;
   float[] history;
   public AuEcho(Piper reader, float srate) {
@@ -97,6 +87,10 @@ public class AuEcho extends AFilter {
     histPos = 0;
     histLen = (int)(mSampleRate * delay);
     history = new float[histLen];
+  }
+
+  public String toString() {
+    return "delay="+delay+", decay="+decay;
   }
 
   public void randomize() {
@@ -115,24 +109,13 @@ public class AuEcho extends AFilter {
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+// https://github.com/audacity/audacity/blob/master/src/effects/BassTreble.cpp
 public class AuBassTreble extends AFilter { 
   float dB_bass, dB_treble;
-  float slope = 0.4;
-  double hzBass = 250.0;
-  double hzTreble = 4000.0; 
+  float slope_b = 0.4; 
+  float slope_t = 0.4;
+  float hzBass = 250.0;
+  float hzTreble = 4000.0; 
   float b0, b1, b2, a0, a1, a2, xn2Bass, xn1Bass, yn2Bass, yn1Bass, b0Bass, b1Bass, b2Bass, xn1Treble, xn2Treble, yn1Treble, yn2Treble, a0Bass, a1Bass, a2Bass, a0Treble, a1Treble, a2Treble, b0Treble, b1Treble, b2Treble;
   double mMax = 0.0;
   float mSampleRate = 44100.0;
@@ -142,27 +125,37 @@ public class AuBassTreble extends AFilter {
     mSampleRate = srate;
     initialize();
   }
+  
+  public String toString() {
+    StringBuilder s = new StringBuilder();
+    s.append("dB_bass="+dB_bass);
+    s.append(", db_treble="+dB_treble);
+    s.append(", slope_b="+slope_b);
+    s.append(", slope_t="+slope_t);
+    s.append(", hzBass="+hzBass);
+    s.append(", hzTreble="+hzTreble);
+    return s.toString();
+  }
+  
   public void randomize() {   
-    dB_bass = -15.0 + ( random(1)*30.0 );
-    dB_treble = -15.0 + ( random(1)*30.0 );
+    dB_bass = random(-30,30);// -15.0 + ( random(1)*30.0 );
+    dB_treble = random(-30,30);// -15.0 + ( random(1)*30.0 );
+    slope_b = random(0.1,0.8);
+    slope_t = random(1)<0.5?slope_b:random(0.1,0.8);
+    hzBass = random(100,500);
+    hzTreble = random(3000.0,8000.0);
     //    println("setting b:"+dB_bass+", t:"+dB_treble);
-    recalc();
+    initialize();
   }
 
-  public void initialize() {
-    dB_bass = -15.0 + ( random(1)*30.0 );
-    dB_treble = -15.0 + ( random(1)*30.0 );
-
-    recalc();
-  }
-  void recalc() { 
+  public void initialize() { 
     xn1Bass = xn2Bass = yn1Bass = yn2Bass = 0.0;
     xn1Treble = xn2Treble = yn1Treble = yn2Treble = 0.0;
 
 
     float w = (float)(2 * PI * hzBass / mSampleRate);
     float a = exp((float)(log(10.0) *  dB_bass / 40));
-    float b = sqrt((float)((a * a + 1) / slope - (pow((float)(a - 1), 2))));
+    float b = sqrt((float)((a * a + 1) / slope_b - (pow((float)(a - 1), 2))));
 
     b0Bass = a * ((a + 1) - (a - 1) * cos(w) + b * sin(w));
     b1Bass = 2 * a * ((a - 1) - (a + 1) * cos(w));
@@ -173,9 +166,7 @@ public class AuBassTreble extends AFilter {
 
     w = (float)(2 * PI * hzTreble / mSampleRate);
     a = exp((float)(log(10.0) * dB_treble / 40));
-    b = sqrt((float)((a * a + 1) / slope - (pow((float)(a - 1), 2))));
-
-
+    b = sqrt((float)((a * a + 1) / slope_t - (pow((float)(a - 1), 2))));
 
     b0Treble = a * ((a + 1) + (a - 1) * cos(w) + b * sin(w));
     b1Treble = -2 * a * ((a - 1) + (a + 1) * cos(w));
@@ -214,12 +205,7 @@ public class AuBassTreble extends AFilter {
   }
 }
 
-
-
-
-
-
-
+// https://github.com/audacity/audacity/blob/master/src/effects/Wahwah.cpp
 public class AuWahwah extends AFilter {
   float mSampleRate, mDepth, mFreqOfs, mPhase, mRes, mFreq;
   int skipcount;
@@ -239,28 +225,37 @@ public class AuWahwah extends AFilter {
      Param( Depth,     int,     XO("Depth"),      70,      0,       100,     1   ); // scaled to 0-1 before processing
      Param( Res,       double,  XO("Resonance"),  2.5,     0.1,     10.0,    10  );
      Param( FreqOfs,   int,     XO("Offset"),     30,      0,       100,     1   ); // scaled to 0-1 before processing */
-    mFreq = 0.01 + (2*random(1));
-    mPhase = random(1)*359;
-    mDepth = 80.1;//random(1);
-    mRes = map(mouseY,0,height,0.1,10);//0.1+(9.9*random(1));
-    mFreqOfs = map(mouseX,0,width,0,10);//random(1)*20;
-      depth = mDepth / 100.0;
-    freqofs = mFreqOfs / 100.0;
-
-    phase = mPhase * PI / 180.0;
+    mFreq = 15;
+    mPhase = 0;
+    mDepth = 70;
+    mRes = 25;
+    mFreqOfs = 30;
+  //  mRes = map(mouseY,0,height,0.1,10);//0.1+(9.9*random(1));
+  //  mFreqOfs = map(mouseX,0,width,0,100);//random(1)*20;
   }
 
+  public String toString() {
+    StringBuilder s = new StringBuilder();
+    s.append("mFreq=" + mFreq);
+    s.append(", mPhase=" + mPhase);
+    s.append(", mDepth=" + mDepth);
+    s.append(", mRes=" + mRes);
+    s.append(", mFreqOfs=" + mFreqOfs);
+    return s.toString();
+  }
 
   public void randomize() {
-setDefaults();
+    mFreq = random(0.1,40.0);// + (2*random(1));
+    mPhase = random(360);//random(1)*359;
+    mDepth = random(10,100);//80.1;//random(1);
+    mRes = random(0.1,100.0);
+    mFreqOfs = random(0,100);
+    initialize();
   }
 
-
-
-  public void initialize() {
-
+  public void initialize() {    
     lfoskip = mFreq * 2 * PI / mSampleRate;
-    println(mFreq +"* 2 * 3.14 /"+mSampleRate);
+   // println(mFreq +"* 2 * 3.14 /"+mSampleRate);
     //  exit();
     skipcount = 0;
     xn1 = 0;
@@ -276,17 +271,14 @@ setDefaults();
 
     depth = mDepth / 100.0;
     freqofs = mFreqOfs / 100.0;
-
     phase = mPhase * PI / 180.0;
   }
 
   public float read() {
     float in = reader.read();
-    float out = in;
     float frequency, omega, sn, cs, alpha;
 
-    if ((skipcount++) % lfoskipsamples == 0)
-    {
+    if ((skipcount++) % lfoskipsamples == 0) {
       frequency = (1 + cos(skipcount * lfoskip + phase)) / 2;
       frequency = frequency * depth * (1 - freqofs) + freqofs;
       frequency = exp((frequency - 1) * 6);
@@ -300,22 +292,22 @@ setDefaults();
       a0 = 1 + alpha;
       a1 = -2 * cs;
       a2 = 1 - alpha;
-    };
-    out = (b0 * in + b1 * xn1 + b2 * xn2 - a1 * yn1 - a2 * yn2) / a0;
+    }
+    
+    float out = (b0 * in + b1 * xn1 + b2 * xn2 - a1 * yn1 - a2 * yn2) / a0;
     xn2 = xn1;
     xn1 = in;
     yn2 = yn1;
     yn1 = out;
-
-
-
-    //FIXME :p
+    
+    //FIXME :p // what to fix? :)
     return out;
   }
 }
 
+// Bob
 public class TShiftR extends AFilter {
-  public int mPasses = 3;
+  public int mPasses = 5;
   public float mDiv = 1.0;
   public float _prev = 0.0;
 
@@ -326,14 +318,16 @@ public class TShiftR extends AFilter {
 
   public void initialize() {
     _prev = 0.0;
-    mPasses = 5;
-    mDiv = 1;
   }
+
+  public String toString() {
+    return("mPasses=" + mPasses + ", mDiv=" + mDiv);
+  }
+
   public void randomize() {
-    _prev = 0.0;
-     mPasses = 1+(int)(random(1) * 10.0);
-     mDiv = 0.01+random(2);
-     println("mPasses set to "+mPasses+", divider modifier set to "+mDiv);
+     mPasses = (int)random(1,11);
+     mDiv = random(0.01,2);
+     initialize();
   }
 
   public float read() {

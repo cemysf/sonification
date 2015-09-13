@@ -2,7 +2,7 @@
 abstract class AFilter implements Piper {
   public float srate;
   public float rsrate;
-  Piper reader;
+  public Piper reader;
   
   public AFilter(Piper reader, float srate) {
     this.srate = srate;
@@ -11,6 +11,7 @@ abstract class AFilter implements Piper {
   }
 
   public void randomize() {}
+  public void initialize() {}
 }
 
 // stub for stereo
@@ -38,6 +39,9 @@ public class EmptyStereo extends AFilter {
     return buffer.read();
   }  
   
+  public String toString() {
+    return "";
+  }
 }
 
 
@@ -58,13 +62,27 @@ public class Empty extends AFilter {
     return reader.read();
   }  
   
+  public String toString() {
+    return "";
+  }
 }
 
+// https://github.com/swh/ladspa/blob/master/dj_eq_1901.xml
 public class DjEq extends AFilter {
   
   public float lo, mid, hi;
   public float peak_bw, shelf_slope;
   public Biquad f1,f2,f3;
+  
+  public String toString() {
+    StringBuilder s = new StringBuilder();
+    s.append("lo="+lo);
+    s.append(", mid="+mid);
+    s.append(", hi="+hi);
+    s.append(", peak_bw="+peak_bw);
+    s.append(", shelf_slope="+shelf_slope);
+    return s.toString();
+  }
   
   public DjEq(Piper reader, float srate) {
     super(reader, srate);
@@ -99,11 +117,10 @@ public class DjEq extends AFilter {
   
   public float read() {
     return f3.biquad_run(f2.biquad_run(f1.biquad_run(reader.read())));
-  }  
-  
+  }
 }
 
-
+// https://github.com/swh/ladspa/blob/master/comb_1190.xml
 public class Comb extends AFilter {
   private static final int COMB_SIZE = 0x4000;
   private static final int COMB_MASK = 0x3fff;
@@ -132,6 +149,10 @@ public class Comb extends AFilter {
     offset = constrain(srate / freq, 0, COMB_MASK);
   }
 
+  public String toString() {
+    return "freq="+freq+", feedback="+feedback;
+  }
+  
   public void randomize() {
     freq = random(16,640);
     feedback = random(-1,1);
@@ -151,6 +172,7 @@ public class Comb extends AFilter {
   }  
 }
 
+// https://github.com/swh/ladspa/blob/master/vynil_1905.xml
 public class Vynil extends AFilter {
   Pipe buffer = new Pipe(2);
   float [] buffer_m, buffer_s;
@@ -247,6 +269,16 @@ public class Vynil extends AFilter {
     noise_filt.lp_set_params(noise_bandwidth, 4.0 + wear * 2.0, srate);
   }
   
+  public String toString() {
+    StringBuilder s = new StringBuilder();
+    s.append("year=" + year);
+    s.append(", rpm=" + rpm);
+    s.append(", warp=" + warp);
+    s.append(", click=" + click);
+    s.append(", wear="+wear);
+    return s.toString();
+  }
+  
   public void randomize() {
     year = random(1900,1990);
     rpm = random(33,78);
@@ -315,6 +347,7 @@ public class Vynil extends AFilter {
   }
 }
 
+// CMT?
 public class CanyonDelay extends AFilter {
   public float ltr_time = 0.5;
   public float rtl_time = 0.5;
@@ -356,6 +389,16 @@ public class CanyonDelay extends AFilter {
     filter_mag = 1.0 - filter_invmag;
   }
   
+  public String toString() {
+    StringBuilder s = new StringBuilder();
+    s.append("ltr_time="+ltr_time);
+    s.append(", rtl_time="+rtl_time);
+    s.append(", ltr_feedback="+ltr_feedback);
+    s.append(", rtl_feedback="+rtl_feedback);
+    s.append(", cutoff="+cutoff);
+    return s.toString();
+  }
+  
   public void randomize() {
     ltr_time = random(0.001,1);
     rtl_time = random(0.001,1);;
@@ -395,6 +438,7 @@ public class CanyonDelay extends AFilter {
   }
 }
 
+// CMT
 public class Vcf303 extends AFilter {
   float scale;
   
@@ -430,6 +474,16 @@ public class Vcf303 extends AFilter {
     dec = pow(d,64);
     res = exp(-1.2 + 3.455 * resonance);
     abc = recalc_a_b_c();
+  }
+  
+  public String toString() {
+    StringBuilder s = new StringBuilder();
+    s.append("env_mod="+env_mod);
+    s.append("cutoff="+cutoff);
+    s.append("resonance="+resonance);
+    s.append("decay="+decay);
+    s.append("trigger="+trigger);
+    return s.toString();  
   }
   
   public void randomize() {

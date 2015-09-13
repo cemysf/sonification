@@ -6,7 +6,7 @@
 
 // Usage:
 //   * press SPACE to save
-//   * click to randomize effect settings
+//   * c or click to randomize effect settings
 //   * f to randomize filters
 //   * r to randomize raw settings
 
@@ -41,13 +41,14 @@ int w_colorspace = LAB; // list below
 // put list of the filters { name, sample rate }
 float[][] filters = {
  // { PHASER, 14100.0 },
- // { DJEQ, 44100.0 },
+  { DJEQ, 44100.0 },
  // { ECHO, 31000.0 },
  // { VYNIL, 43100.0},
- // { BASSTREBLE, 24100.0 },
-  { ECHO, 44100.0 },
+//  { BASSTREBLE, 44100.0 },
+ //{ ECHO, 44100.0 },
  // { COMB, 24410.0 }, 
  // { SHIFTR, 44100.0 }
+  { WAHWAH,44100.0 }
 };
 
 // EFFECTS!
@@ -146,14 +147,23 @@ void setup() {
 void prepareFilters(float[][] f) {
   filterchain.clear();
   Piper p = isr;
-  println("Filters:");
+//  println("Filters:");
   for(int i = 0; i<f.length;i++) {
     afilter = createFilter((int)f[i][0],p,f[i][1]);
-    println("-> " + afilter.getClass().getName());
+ //   println("-> " + afilter.getClass().getName());
     p = afilter;
     filterchain.add(afilter);
   }
-  println("");
+ // println("");
+}
+
+void reinitFilters() {
+  Piper p = isr;
+  for(AFilter f: filterchain) {
+    f.reader = p;
+    f.initialize();
+    p = f;
+  }
 }
 
 void randomizeConfig() {
@@ -162,7 +172,6 @@ void randomizeConfig() {
   resetStreams();
 }
 
-// TODO: print settings
 void randomizeFilters() {
   int filterno = (int)random(1,4); // 1, 2 or 3 filters in chain
   filters = new float[filterno][2];
@@ -174,30 +183,59 @@ void randomizeFilters() {
   resetStreams();  
 }
 
-// TODO: print settings
 void randomizeRaw() {
   boolean keepsame = random(1)<0.5;
-  int rawtype = random(1)<0.5?INTERLEAVED:PLANAR;
-  int law = random(1)<0.334?NONE:random(1)<0.5?A_LAW:U_LAW;
-  int sign = random(1)<0.5?SIGNED:UNSIGNED;
-  int bits = random(1)<0.334?B8:random(1)<0.5?B16:B24;
-  int endian = random(1)<0.5?BIG_ENDIAN:LITTLE_ENDIAN;
+  w_rawtype = r_rawtype = random(1)<0.5?INTERLEAVED:PLANAR;
+  w_law = r_law = random(1)<0.334?NONE:random(1)<0.5?A_LAW:U_LAW;
+  w_sign = r_sign = random(1)<0.5?SIGNED:UNSIGNED;
+  w_bits = r_bits = random(1)<0.334?B8:random(1)<0.5?B16:B24;
+  w_endianess = r_endianess = random(1)<0.5?BIG_ENDIAN:LITTLE_ENDIAN;
   w_colorspace = r_colorspace = (int)(1000+random(MAX_COLORSPACES+1));
-  println("r_colorspace = " + getCSName(r_colorspace));
-  isr = new RawReader(img.get(), rawtype, law, sign, bits, endian);
+  isr = new RawReader(img.get(), r_rawtype, r_law, r_sign, r_bits, r_endianess);
   isr.r.convertColorspace(r_colorspace);
   if(!keepsame) {
-    rawtype = random(1)<0.5 ? (random(1)<0.5?INTERLEAVED:PLANAR) : rawtype;
-    law = random(1)<0.334?NONE:random(1)<0.5?A_LAW:U_LAW;
-    sign = random(1)<0.5?SIGNED:UNSIGNED;
-    bits = random(1)<0.2 ? (random(1)<0.334?B8:random(1)<0.5?B16:B24) : bits;
-    endian = random(1)<0.5?BIG_ENDIAN:LITTLE_ENDIAN;
+    w_rawtype = random(1)<0.5 ? (random(1)<0.5?INTERLEAVED:PLANAR) : r_rawtype;
+    w_law = random(1)<0.334?NONE:random(1)<0.5?A_LAW:U_LAW;
+    w_sign = random(1)<0.5?SIGNED:UNSIGNED;
+    w_bits = random(1)<0.2 ? (random(1)<0.334?B8:random(1)<0.5?B16:B24) : r_bits;
+    w_endianess = random(1)<0.5?BIG_ENDIAN:LITTLE_ENDIAN;
     w_colorspace = (int)(1000+random(MAX_COLORSPACES+1));
   }
-  println("w_colorspace = " + getCSName(w_colorspace));
-  isw = new RawWriter(img.get(), rawtype, law, sign, bits, endian);
-  prepareFilters(filters);
+  isw = new RawWriter(img.get(), w_rawtype, w_law, w_sign, w_bits, w_endianess);
+  reinitFilters();
   resetStreams();
+}
+
+String bString(boolean v) { return v?"true":"false";}
+void printConfig() {
+  println("");
+  println("*****************");
+  println("General settings:");
+  println("  * equalize and normalize histogram: " + bString(make_equalize));
+  println("Read image as RAW/WAV:");
+  println("  * RAW type: " + getFormatName(r_rawtype));
+  println("  * Number format: " + r_bits + " bits, " + getSignName(r_sign));
+  println("  * Endianess: " + getEndianName(r_endianess));
+  println("  * LAW filtering: " + getLawName(r_law));
+  println("  * colorspace: " + getCSName(r_colorspace));
+  
+  println("Write image as RAW/WAV:");
+  println("  * RAW type: " + getFormatName(w_rawtype));
+  println("  * Number format: " + w_bits + " bits, " + getSignName(w_sign));
+  println("  * Endianess: " + getEndianName(w_endianess));
+  println("  * LAW filtering: " + getLawName(w_law));
+  println("  * colorspace: " + getCSName(w_colorspace));
+  
+  println("Filters used:");
+  for(AFilter f: filterchain) {
+    println("  * " + f.getClass().getName() + ", sample rate: "+f.srate);
+  }
+  
+  println("Filters config:");
+  for(AFilter f: filterchain) {
+    println("--Config for "+ f.getClass().getName() + ":");
+    println(f.toString());
+  }
 }
 
 void draw() {
@@ -205,6 +243,7 @@ void draw() {
 }
 
 void processImage() {
+  printConfig();
   buffer.beginDraw();
   
   // process every byte
@@ -234,7 +273,6 @@ void resetStreams() {
 
 void mouseClicked() {
   randomizeConfig();
-    
   processImage();
 }
 
@@ -252,6 +290,9 @@ void keyPressed() {
   if(key == 'f') {
     randomizeFilters();
     processImage();
+  }
+  if(key == 'c') {
+    mouseClicked();
   }
 }
 
