@@ -36,11 +36,11 @@ int w_law = NONE; // NONE, A_LAW, U_LAW
 int w_sign = UNSIGNED; // SIGNED or UNSIGNED
 int w_bits = B8; // B8, B16 or B24, bits per sample
 int w_endianess = LITTLE_ENDIAN; // BIG_ENDIAN or LITTLE_ENDIAN
-int w_colorspace = LUV; // list below
+int w_colorspace = LAB; // list below
 
 // put list of the filters { name, sample rate }
 float[][] filters = {
-  { NOFILTER, 44100.0 },
+  { PHASER, 14100.0 },
  // { DJEQ, 44100.0 },
  // { ECHO, 31000.0 },
  // { VYNIL, 43100.0},
