@@ -84,7 +84,7 @@ public class AuPhaser extends AFilter {
 public class AuEcho extends AFilter {
   float delay = 1.0;
   float decay = 0.5;
-  float mSampleRate = 128;
+  float mSampleRate = srate; // sample rate from AFilter
   int histPos, histLen;
   float[] history;
   public AuEcho(Piper reader, float srate) {
@@ -94,25 +94,22 @@ public class AuEcho extends AFilter {
   }
 
   public void initialize() {
-    delay = 1.0;//random(1);
-    decay = 0.5;//random(1);
     histPos = 0;
     histLen = (int)(mSampleRate * delay);
     history = new float[histLen];
   }
 
   public void randomize() {
-    delay = random(1);
+    delay = random(0.001,1);
     decay = random(1);
 
-    //    initialize();
+    initialize();
   }
 
   public float read() {
-    float in = reader.read();
     float result = 0.0;
     if ( histPos == histLen) histPos = 0;
-    history[histPos] = result = in + history[histPos] * decay;
+    history[histPos] = result = reader.read() + history[histPos] * decay;
     histPos++;
     return result;
   }
