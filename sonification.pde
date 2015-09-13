@@ -20,7 +20,7 @@ int max_display_size = 800; // viewing window size (regardless image size)
 boolean do_blend = false; // blend image after process
 int blend_mode = OVERLAY; // blend type
 
-boolean make_equalize = false; // equalize and normalize histogram
+boolean make_equalize = true; // equalize and normalize histogram
 
 // image reader config
 int r_rawtype = INTERLEAVED; // planar: rrrrr...ggggg....bbbbb; interleaved: rgbrgbrgb...
@@ -70,6 +70,7 @@ final static int XYZ = 1003;
 final static int YXY = 1004;
 final static int HCL = 1005;
 final static int LUV = 1006;
+final static int LAB = 1007;
 
 // configuration constants
 final static int A_LAW = 0;

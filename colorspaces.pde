@@ -18,21 +18,96 @@ final static float D65Y=1.0;
 final static float D65Z=1.088754;
 final static float CIEEpsilon=(216.0/24389.0);
 final static float CIEK=(24389.0/27.0);
+final static float CIEK2epsilon = CIEK * CIEEpsilon;
 final static float D65FX_4 = 4.0*D65X/(D65X+15.0*D65Y+3.0*D65Z);
 final static float D65FY_9 = 9.0*D65Y/(D65X+15.0*D65Y+3.0*D65Z);
+final static float RANGE_X = 100.0 * (0.4124+0.3576+0.1805);
+final static float RANGE_Y = 100.0;
+final static float RANGE_Z = 100.0 * (0.0193+0.1192+0.9505);
+final static float mepsilon = 1.0e-10;
+final static float corrratio = 1.0/2.4;
+final static float One_Third = 1.0/3.0;
+
+/**************
+ * Lab
+ **************/
+
+color toLAB(color c) {
+  PVector xyz = _toXYZ(getNR(c),getNG(c),getNB(c));
+  xyz.div(100.0);
+  xyz.x /= D65X;
+  xyz.y /= D65Y;
+  xyz.z /= D65Z;
+  float x,y,z;
+  
+  if(xyz.x > CIEEpsilon) {
+    x = pow(xyz.x,One_Third);
+  } else {
+    x= (CIEK*xyz.x+16.0)/116.0;
+  }
+  
+  if(xyz.y > CIEEpsilon) {
+    y = pow(xyz.y, One_Third);
+  } else {
+    y = (CIEK*xyz.y+16.0)/116.0;
+  }
+  
+  if(xyz.z > CIEEpsilon) {
+    z = pow(xyz.z, One_Third);
+  } else {
+    z = (CIEK*xyz.z+16.0)/116.0;
+  }
+  
+  float L = 255.0*(((116.0*y)-16.0)/100.0);
+  float a = 255.0*(0.5*(x-y)+0.5);
+  float b = 255.0*(0.5*(y-z)+0.5);
+  
+  return blendRGB(c,round(L),round(a),round(b));
+}
+
+color fromLAB(color c) {
+  float L = 100*getNR(c);
+  float a = getNG(c)-0.5;
+  float b = getNB(c)-0.5;
+  
+  float y = (L+16.0)/116.0;
+  float x = y+a;
+  float z = y-b;
+  
+  float xxx=x*x*x;
+  if(xxx>CIEEpsilon) {
+    x = xxx;
+  } else {
+    x = (116.0*x-16.0)/CIEK;
+  }
+  
+  float yyy=y*y*y;
+  if(yyy>CIEEpsilon) {
+    y = yyy;
+  } else {
+    y = L/CIEK;
+  }
+  
+  float zzz=z*z*z;
+  if(zzz>CIEEpsilon) {
+    z = zzz;
+  } else {
+    z = (116.0*z-16.0)/CIEK;
+  }
+  
+  return _fromXYZ(c, RANGE_X*x, RANGE_Y*y, RANGE_Z*z);
+}
 
 /**************
  * Luv
  **************/
  
-final static float mepsilon = 1.0e-10; 
 final float PerceptibleReciprocal(float x) {
   float sgn = x < 0.0 ? -1.0 : 1.0;
   if((sgn * x) >= mepsilon) return (1.0 / x);
   return (sgn/mepsilon);
 } 
  
-final static float One_Third = 1.0/3.0;
 color toLUV(color c) {
   PVector xyz = _toXYZ(getNR(c),getNG(c),getNB(c));
   xyz.div(100.0);
@@ -50,7 +125,6 @@ color toLUV(color c) {
   return blendRGB(c, round(L*255),round(u*255),round(v*255));
 }
 
-final static float CIEK2epsilon = CIEK * CIEEpsilon;
 color fromLUV(color c) {
   float L = 100.0*getNR(c);
   float u = 354.0*getNG(c)-134.0;
@@ -149,11 +223,6 @@ color fromYXY(color c) {
  * XYZ
  **************/
 
-// XYZ ranges
-final static float RANGE_X = 100.0 * (0.4124+0.3576+0.1805);
-final static float RANGE_Y = 100.0;
-final static float RANGE_Z = 100.0 * (0.0193+0.1192+0.9505);
-
 // FIXME: range from 0 to 1
 float correctionxyz(float n) {
   return (n > 0.04045 ? pow((n + 0.055) / 1.055, 2.4) : n / 12.92) * 100.0;
@@ -176,7 +245,6 @@ color toXYZ(color c) {
          (int)map(xyz.z,0,RANGE_Z,0,255));
 }
 
-final static float corrratio = 1.0/2.4;
 float recorrectionxyz(float n) {
   return n > 0.0031308 ? 1.055 * pow(n, corrratio) - 0.055 : 12.92 * n;
 }
