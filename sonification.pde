@@ -36,19 +36,20 @@ int w_law = NONE; // NONE, A_LAW, U_LAW
 int w_sign = UNSIGNED; // SIGNED or UNSIGNED
 int w_bits = B8; // B8, B16 or B24, bits per sample
 int w_endianess = LITTLE_ENDIAN; // BIG_ENDIAN or LITTLE_ENDIAN
-int w_colorspace = LAB; // list below
+int w_colorspace = RGB; // list below
 
 // put list of the filters { name, sample rate }
 float[][] filters = {
  // { PHASER, 14100.0 },
-  { DJEQ, 44100.0 },
+//  { TAPSIGMOID, 44100.0 },
  // { ECHO, 31000.0 },
  // { VYNIL, 43100.0},
 //  { BASSTREBLE, 44100.0 },
  //{ ECHO, 44100.0 },
  // { COMB, 24410.0 }, 
  // { SHIFTR, 44100.0 }
-  { WAHWAH,44100.0 }
+ // { WAHWAH,44100.0 }
+   { RANDMIX, 114100.0 }
 };
 
 // EFFECTS!
@@ -63,6 +64,9 @@ final static int PHASER = 6;
 final static int WAHWAH = 7;
 final static int BASSTREBLE = 8; 
 final static int SHIFTR = 9;
+final static int TAPSIGMOID = 10;
+final static int TAPAUTOPAN = 11;
+final static int RANDMIX = 12;
 
 // colorspaces, NONE: RGB
 final static int OHTA = 1001;
@@ -128,6 +132,7 @@ void setup() {
   }
 
   size(neww,newh);
+  init_helper();
 
   isr = new RawReader(img.get(), r_rawtype, r_law, r_sign, r_bits, r_endianess);
   isr.r.convertColorspace(r_colorspace);
@@ -140,6 +145,14 @@ void setup() {
 //  println( getR(_luv) + "," + getG(_luv) + "," + getB(_luv));
 //  _luv = fromLUV(_luv);
 //  println( getR(_luv) + "," + getG(_luv) + "," + getB(_luv));
+  
+//  float in = -1;
+//  float out = in;
+//  float _prev=0.5;
+//  for(int i=0;i<1;i++) {
+//    out = sqrt((out + _prev) / ( in * 1 ) );
+//  }
+//  println(out);
   
   processImage();
 }

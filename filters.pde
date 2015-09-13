@@ -67,6 +67,146 @@ public class Empty extends AFilter {
   }
 }
 
+// own
+// randomly mixed up to 'tail' previous samples
+public class Randmix extends AFilter {
+  float[] prev,w;
+  int idx = 0;
+  
+  public int tail = 10;
+  
+  public Randmix(Piper reader, float srate) {
+    super(reader, srate);
+    initialize();
+  }
+
+  public void initialize() {
+    idx = 0;
+    prev = new float[tail];
+    w = new float[tail];
+    float last = 100;
+    float sum = 0;
+    for(int i=0;i<tail;i++) {
+      prev[i] = 0.0;
+      w[i] = sqrt(random(1));
+      last = w[i];
+      sum+=w[i];
+    }
+    for(int i=0;i<tail;i++) { w[i] /= sum; } // normalize
+  }
+  
+  public String toString() {
+    return "tail="+tail;
+  }
+  
+  public void randomize() {
+    tail = (int)random(5,30);
+    initialize();
+  }
+  
+  public float read() {
+    prev[idx] = reader.read();
+    float s = 0;
+    for(int i=0;i<tail;i++) {
+      s += prev[ (idx-i+tail)%tail ] * w[i];
+    } 
+    prev[idx] = s;
+    idx = (idx+1)%tail;
+    return s;
+  }  
+  
+}
+
+
+// https://github.com/tomszilagyi/tap-plugins/blob/master/tap_autopan.c
+public class TapAutopan extends AFilter {
+  Pipe buffer = new Pipe(2);
+  public float freq = 5.0;
+  public float depth = 10.0;
+  public float gain = 1.0;
+  public float phaseStep = 10.0;
+  
+  float phase_L = 0.0;
+  float phase_R = 0.0;
+  float phase = 0.0;
+  float _gain = 0.0;
+  float _depth = 0.0;
+  float _phaseStep = 0.0;
+  int sidx = 0;
+  
+  public TapAutopan(Piper reader, float srate) {
+    super(reader, srate);
+    initialize();
+  }
+
+  public void initialize() {
+    phase_L = 0.0;
+    phase_R = 0.0;
+    phase = 0.0;
+    sidx = 0;
+    _gain = db2lin(gain);
+    _depth = depth/100.0;
+    _phaseStep = 1.0/phaseStep;
+    buffer.ridx = buffer.widx = 0;
+  }
+  
+  public String toString() {
+    return "freq="+freq+", depth="+depth+", gain="+gain+", phaseStep="+phaseStep;
+  }
+  
+  public void randomize() {
+    freq = random(20);
+    depth = random(100);
+    gain = random(-20,20);
+    initialize();
+  }
+  
+  public float read() {
+    if(buffer.ridx==0) {
+      
+      phase_L = (1024.0 * freq * sidx / srate + phase)%1024.0;
+      
+      //while(phase_L >= 1024.0) phase_L -= 1024.0;
+      phase_R = phase_L + 512.0;
+      while(phase_R >= 1024.0) phase_R -= 1024.0;
+      
+      buffer.write( reader.read() * _gain * (1 - 0.5*_depth + 0.5 * _depth * cos_table[(int) phase_L]) ); // left
+      buffer.write( reader.read() * _gain * (1 - 0.5*_depth + 0.5 * _depth * cos_table[(int)phase_R]) ); // right
+      
+      phase += _phaseStep;
+      while(phase >= 1024.0) phase -= 1024.0;
+    }
+    sidx++;
+    return buffer.read();
+  }  
+  
+}
+
+// https://github.com/tomszilagyi/tap-plugins/blob/master/tap_sigmoid.c
+public class TapSigmoid extends AFilter {
+  public float fact = -5.0;
+  
+  public TapSigmoid(Piper reader, float srate) {
+    super(reader, srate);
+    initialize();
+  }
+
+  public void initialize() {}
+  
+  public String toString() {
+    return "fact="+fact;
+  }
+  
+  public void randomize() {
+    fact = random(-10,-1);
+    initialize();
+  }
+  
+  public float read() {
+    return 2.0 / (1.0 + exp(-1*reader.read())) - 1.0;
+  }  
+}
+
 // https://github.com/swh/ladspa/blob/master/dj_eq_1901.xml
 public class DjEq extends AFilter {
   

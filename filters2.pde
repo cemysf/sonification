@@ -326,7 +326,7 @@ public class TShiftR extends AFilter {
 
   public void randomize() {
      mPasses = (int)random(1,11);
-     mDiv = random(0.01,2);
+     mDiv = random(0.5,5);
      initialize();
   }
 
@@ -334,9 +334,9 @@ public class TShiftR extends AFilter {
     float in = reader.read();
     float out = in;
     for ( int i = 0; i< mPasses; i++ ) { 
-    out = sqrt((out + _prev) / ( in * mDiv ) );
-    _prev = in;
+      out = safesqrt((out + _prev) / ( in * mDiv ) );
     }
+    _prev = in;
     return out;
   }
 }

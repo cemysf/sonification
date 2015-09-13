@@ -4,7 +4,7 @@
 // - math functions
 // - histogram equalize and normalize 
 
-final static int MAX_FILTERS = 9; // number of filters here, used for randomization, update every new filter
+final static int MAX_FILTERS = 13; // number of filters here, used for randomization, update every new filter
 public AFilter createFilter(int type, Piper previous, float srate) { //FIXME: make this automagic through reflection
   switch(type) {
     case DJEQ: return new DjEq(previous, srate);
@@ -17,6 +17,9 @@ public AFilter createFilter(int type, Piper previous, float srate) { //FIXME: ma
     case WAHWAH: return new AuWahwah(previous, srate);
     case BASSTREBLE: return new AuBassTreble(previous, srate);
     case SHIFTR: return new TShiftR(previous, srate);
+    case TAPSIGMOID: return new TapSigmoid(previous, srate);
+    case TAPAUTOPAN: return new TapAutopan(previous,srate);
+    case RANDMIX: return new Randmix(previous, srate);
     default: return new Empty(previous, srate); 
   }
 }
@@ -73,6 +76,13 @@ String getSignName(int s) { return s==0?"UNSIGNED":"SIGNED"; }
 String getEndianName(int e) { return e==0?"LITTLE ENDIAN":"BIG ENDIAN";}
 String getFormatName(int f) { return f==0?"PLANAR":"INTERLEAVED"; }
 
+float[] cos_table = new float[1024];
+
+// init helper, run somewhere
+void init_helper() {
+  for(int i=0;i<1024;i++) cos_table[i] = cos(i*PI/512.0); 
+}
+
 final float cosh(float x) {
   return 0.5 * (exp(x) + exp(-x));
 }
@@ -92,6 +102,10 @@ final float safesqrt(float x) {
 final float sgn(float a) {
   if(a == 0.0) return 0.0;
   return a > 0.0 ? 1.0 : -1.0;
+}
+
+final float db2lin(float x) { 
+  return (x > -90.0 ? pow(10.0, x * 0.05) : 0.0);
 }
 
 final float modulate(float amp, float freq, float x, float phase) {
