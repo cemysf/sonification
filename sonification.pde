@@ -49,7 +49,9 @@ float[][] filters = {
  // { COMB, 24410.0 }, 
  // { SHIFTR, 44100.0 }
  // { WAHWAH,44100.0 }
-   { RANDMIX, 114100.0 }
+  // { RANDMIX, 114100.0 }
+   // { DIVIDER, 44100.0 }
+   { AUTOPHASER, 44100.0 }
 };
 
 // EFFECTS!
@@ -67,6 +69,10 @@ final static int SHIFTR = 9;
 final static int TAPSIGMOID = 10;
 final static int TAPAUTOPAN = 11;
 final static int RANDMIX = 12;
+final static int DIVIDER = 13;
+final static int LFOPHASER = 14;
+final static int FOURBYFOURPOLE = 15;
+final static int AUTOPHASER = 16;
 
 // colorspaces, NONE: RGB
 final static int OHTA = 1001;

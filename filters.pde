@@ -67,6 +67,63 @@ public class Empty extends AFilter {
   }
 }
 
+// https://github.com/swh/ladspa/blob/master/divider_1186.xml
+public class Divider extends AFilter {
+  public int denominator = 2;
+  
+  float out, amp, count, lamp, last;
+  int zeroxs;
+  
+  public Divider(Piper reader, float srate) {
+    super(reader, srate);
+    initialize();
+  }
+
+  public void initialize() {
+    out = 1.0;
+    amp = 0.0;
+    count = 0.0;
+    lamp = 0.0;
+    last = 0.0;
+    zeroxs = 0;
+  }
+  
+  public void randomize() {
+    denominator = random(1)<0.8?(int)random(1,12):(int)random(1,100);
+    initialize();
+  }
+  
+  public float read() {
+    count += 1.0;
+    float s = reader.read();
+    if(( s>0.0 && last <= 0.0) || (s<0.0 && last >=0.0)) {
+      zeroxs++;
+      if(denominator == 1) {
+        out = out > 0.0 ? -1.0 : 1.0;
+        lamp = amp / count;
+        zeroxs = 0;
+        count = 0.0;
+        amp = 0.0;
+      }
+    }
+    amp += abs(s);
+    if(denominator > 1 && (zeroxs % denominator) == denominator-1) {
+      out = out > 0.0 ? -1.0 : 1.0;
+      lamp =  amp / count;
+      zeroxs = 0;
+      count = 0.0;
+      amp = 0.0;
+    }
+    last = s;
+    return out * lamp;
+  }  
+  
+  public String toString() {
+    return "denominator="+denominator;
+  }
+}
+
+
 // own
 // randomly mixed up to 'tail' previous samples
 public class Randmix extends AFilter {
