@@ -42,12 +42,12 @@ public class AuPhaser extends AFilter {
   }
 
   public void randomize() {
-    numStages = (int)random(2,25);
+    numStages = (int)random(2, 25);
     mDryWet = (int)random(256);
-    mFreq = random(0.01,40.0);
+    mFreq = random(0.01, 40.0);
     mPhase = random(360);
-    mDepth = (int)random(1,256);
-    mFeedback = random(-100,100);
+    mDepth = (int)random(1, 256);
+    mFeedback = random(-100, 100);
     initialize();
   }
 
@@ -94,7 +94,7 @@ public class AuEcho extends AFilter {
   }
 
   public void randomize() {
-    delay = random(0.001,1);
+    delay = random(0.001, 1);
     decay = random(1);
 
     initialize();
@@ -125,7 +125,7 @@ public class AuBassTreble extends AFilter {
     mSampleRate = srate;
     initialize();
   }
-  
+
   public String toString() {
     StringBuilder s = new StringBuilder();
     s.append("dB_bass="+dB_bass);
@@ -136,14 +136,14 @@ public class AuBassTreble extends AFilter {
     s.append(", hzTreble="+hzTreble);
     return s.toString();
   }
-  
+
   public void randomize() {   
-    dB_bass = random(-30,30);// -15.0 + ( random(1)*30.0 );
-    dB_treble = random(-30,30);// -15.0 + ( random(1)*30.0 );
-    slope_b = random(0.1,0.8);
-    slope_t = random(1)<0.5?slope_b:random(0.1,0.8);
-    hzBass = random(100,500);
-    hzTreble = random(3000.0,8000.0);
+    dB_bass = random(-30, 30);// -15.0 + ( random(1)*30.0 );
+    dB_treble = random(-30, 30);// -15.0 + ( random(1)*30.0 );
+    slope_b = random(0.1, 0.8);
+    slope_t = random(1)<0.5?slope_b:random(0.1, 0.8);
+    hzBass = random(100, 500);
+    hzTreble = random(3000.0, 8000.0);
     //    println("setting b:"+dB_bass+", t:"+dB_treble);
     initialize();
   }
@@ -230,8 +230,8 @@ public class AuWahwah extends AFilter {
     mDepth = 70;
     mRes = 25;
     mFreqOfs = 30;
-  //  mRes = map(mouseY,0,height,0.1,10);//0.1+(9.9*random(1));
-  //  mFreqOfs = map(mouseX,0,width,0,100);//random(1)*20;
+    //  mRes = map(mouseY,0,height,0.1,10);//0.1+(9.9*random(1));
+    //  mFreqOfs = map(mouseX,0,width,0,100);//random(1)*20;
   }
 
   public String toString() {
@@ -245,17 +245,17 @@ public class AuWahwah extends AFilter {
   }
 
   public void randomize() {
-    mFreq = random(0.1,40.0);// + (2*random(1));
+    mFreq = random(0.1, 40.0);// + (2*random(1));
     mPhase = random(360);//random(1)*359;
-    mDepth = random(10,100);//80.1;//random(1);
-    mRes = random(0.1,100.0);
-    mFreqOfs = random(0,100);
+    mDepth = random(10, 100);//80.1;//random(1);
+    mRes = random(0.1, 100.0);
+    mFreqOfs = random(0, 100);
     initialize();
   }
 
   public void initialize() {    
     lfoskip = mFreq * 2 * PI / mSampleRate;
-   // println(mFreq +"* 2 * 3.14 /"+mSampleRate);
+    // println(mFreq +"* 2 * 3.14 /"+mSampleRate);
     //  exit();
     skipcount = 0;
     xn1 = 0;
@@ -293,13 +293,13 @@ public class AuWahwah extends AFilter {
       a1 = -2 * cs;
       a2 = 1 - alpha;
     }
-    
+
     float out = (b0 * in + b1 * xn1 + b2 * xn2 - a1 * yn1 - a2 * yn2) / a0;
     xn2 = xn1;
     xn1 = in;
     yn2 = yn1;
     yn1 = out;
-    
+
     //FIXME :p // what to fix? :)
     return out;
   }
@@ -325,9 +325,9 @@ public class TShiftR extends AFilter {
   }
 
   public void randomize() {
-     mPasses = (int)random(1,11);
-     mDiv = random(0.5,5);
-     initialize();
+    mPasses = (int)random(1, 11);
+    mDiv = random(0.5, 5);
+    initialize();
   }
 
   public float read() {
@@ -345,21 +345,41 @@ public class TShiftR extends AFilter {
 
 
 public class TReverb extends AFilter {
- // int delay
+  // int delay
+  int delSample, mDelayMs = 2000;
+  float mDecay = 0.5;
+  float mSampleRate;
+  ArrayList<Float> history;
   public TReverb(Piper reader, float srate) {
     super(reader, srate);
+    mSampleRate = srate;
     initialize();
   }
 
   public void initialize() {
+    delSample = (int)((float)mDelayMs * mSampleRate/100);
+    history = new ArrayList<Float>();
   }
   public void randomize() {
+    mDecay = 0.1+(random(1)*0.87);
+    mDelayMs = (int)(1+(random(1)*9000));
     initialize();
   }
 
   public float read() {
     float in = reader.read();
-    float out = in;
+    history.add(in);
+    int idx = history.size()-1;
+    float out = 0.0, prev;
+    //println(delSample);
+    if ( idx >= delSample ) { 
+      //println("ac");
+      prev = history.get(idx-delSample);
+      out = in + prev * mDecay;
+    } else {
+      out = in;
+    }
+    history.set(idx,out);
     return out;
   }
 }
@@ -367,9 +387,9 @@ public class TReverb extends AFilter {
 
 public class AuAmplify extends AFilter {
   /*Param( Ratio,     float,   XO("Ratio"),            0.9f,       0.003162f,  316.227766f,   1.0f  );
-Param( Amp,       float,   wxT(""),                -0.91515f,  -50.0f,     50.0f,         10.0f );*/
- float mRatio, mAmp, mRatioClip, mPeak;
- Boolean mCanClip = false;
+   Param( Amp,       float,   wxT(""),                -0.91515f,  -50.0f,     50.0f,         10.0f );*/
+  float mRatio, mAmp, mRatioClip, mPeak;
+  Boolean mCanClip = false;
   public AuAmplify(Piper reader, float srate) {
     super(reader, srate);
     mAmp = 0.9;
@@ -377,8 +397,8 @@ Param( Amp,       float,   wxT(""),                -0.91515f,  -50.0f,     50.0f
     mRatioClip = 0.0;
     mCanClip = false;
     mPeak = 0.0;
-    
-    
+
+
     initialize();
   }
 
@@ -392,7 +412,7 @@ Param( Amp,       float,   wxT(""),                -0.91515f,  -50.0f,     50.0f
 
   public float read() {
     float in = reader.read();
-    
+
     float out = in * mRatio;
     return out;
   }

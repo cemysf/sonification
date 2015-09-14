@@ -40,19 +40,19 @@ int w_colorspace = RGB; // list below
 
 // put list of the filters { name, sample rate }
 float[][] filters = {
- // { PHASER, 14100.0 },
-//  { TAPSIGMOID, 44100.0 },
- // { ECHO, 31000.0 },
- // { VYNIL, 43100.0},
-//  { BASSTREBLE, 44100.0 },
- //{ ECHO, 44100.0 },
- // { COMB, 24410.0 }, 
- // { SHIFTR, 44100.0 }
- // { WAHWAH,44100.0 }
-  // { RANDMIX, 114100.0 }
-   // { DIVIDER, 44100.0 }
-   //{ AUTOPHASER, 44100.0 }
-   { AUAMPLIFY, 44100.0 }
+/*  { PHASER, 14100.0 },
+  { TAPSIGMOID, 44100.0 },
+  { ECHO, 31000.0 },
+  { VYNIL, 43100.0},
+  { BASSTREBLE, 44100.0 },
+ { ECHO, 44100.0 },
+  { COMB, 24410.0 }, 
+  { SHIFTR, 44100.0 },
+  { WAHWAH,44100.0 },
+   { RANDMIX, 114100.0 }, */
+    { FOURBYFOURPOLE, 44100.0 },
+   { AUTOPHASER, 44100.0 },
+   { TREVERB, 44100.0 },
 };
 
 // EFFECTS!
@@ -75,6 +75,7 @@ final static int LFOPHASER = 14;
 final static int FOURBYFOURPOLE = 15;
 final static int AUTOPHASER = 16;
 final static int AUAMPLIFY = 17;
+final static int TREVERB = 18;
 
 // colorspaces, NONE: RGB
 final static int OHTA = 1001;
