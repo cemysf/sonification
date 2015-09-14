@@ -51,7 +51,8 @@ float[][] filters = {
  // { WAHWAH,44100.0 }
   // { RANDMIX, 114100.0 }
    // { DIVIDER, 44100.0 }
-   { AUTOPHASER, 44100.0 }
+   //{ AUTOPHASER, 44100.0 }
+   { AUAMPLIFY, 44100.0 }
 };
 
 // EFFECTS!
@@ -73,6 +74,7 @@ final static int DIVIDER = 13;
 final static int LFOPHASER = 14;
 final static int FOURBYFOURPOLE = 15;
 final static int AUTOPHASER = 16;
+final static int AUAMPLIFY = 17;
 
 // colorspaces, NONE: RGB
 final static int OHTA = 1001;

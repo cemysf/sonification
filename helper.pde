@@ -4,7 +4,7 @@
 // - math functions
 // - histogram equalize and normalize 
 
-final static int MAX_FILTERS = 17; // number of filters here, used for randomization, update every new filter
+final static int MAX_FILTERS = 18; // number of filters here, used for randomization, update every new filter
 public AFilter createFilter(int type, Piper previous, float srate) { //FIXME: make this automagic through reflection
   switch(type) {
     case DJEQ: return new DjEq(previous, srate);
@@ -24,6 +24,7 @@ public AFilter createFilter(int type, Piper previous, float srate) { //FIXME: ma
     case LFOPHASER: return new LFOPhaser(previous, srate);
     case FOURBYFOURPOLE: return new FourByFourPole(previous, srate);
     case AUTOPHASER: return new AutoPhaser(previous, srate);
+    case AUAMPLIFY: return new AuAmplify(previous, srate);
     default: return new Empty(previous, srate); 
   }
 }

@@ -344,6 +344,61 @@ public class TShiftR extends AFilter {
 
 
 
+public class TReverb extends AFilter {
+ // int delay
+  public TReverb(Piper reader, float srate) {
+    super(reader, srate);
+    initialize();
+  }
+
+  public void initialize() {
+  }
+  public void randomize() {
+    initialize();
+  }
+
+  public float read() {
+    float in = reader.read();
+    float out = in;
+    return out;
+  }
+}
+
+
+public class AuAmplify extends AFilter {
+  /*Param( Ratio,     float,   XO("Ratio"),            0.9f,       0.003162f,  316.227766f,   1.0f  );
+Param( Amp,       float,   wxT(""),                -0.91515f,  -50.0f,     50.0f,         10.0f );*/
+ float mRatio, mAmp, mRatioClip, mPeak;
+ Boolean mCanClip = false;
+  public AuAmplify(Piper reader, float srate) {
+    super(reader, srate);
+    mAmp = 0.9;
+    mRatio = pow(10.0, mAmp / 20.0);
+    mRatioClip = 0.0;
+    mCanClip = false;
+    mPeak = 0.0;
+    
+    
+    initialize();
+  }
+
+  public void initialize() {
+    mAmp = 0.1+( random(1)* 12.0 );
+    mRatio = pow(10.0, mAmp / 20.0);
+  }
+  public void randomize() {
+    initialize();
+  }
+
+  public float read() {
+    float in = reader.read();
+    
+    float out = in * mRatio;
+    return out;
+  }
+}
+
+
 public class Empty2 extends AFilter {
 
   public Empty2(Piper reader, float srate) {
