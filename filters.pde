@@ -67,6 +67,49 @@ public class Empty extends AFilter {
   }
 }
 
+// 3.1 Nonlinear Digital Fitlers, vacuum tube
+// http://compmus.ime.usp.br/sbcm/2013/pt/docs/art_tec_3.pdf 
+public class VacuumTubeAmp extends AFilter {
+  
+  public float range_a = -0.5;
+  public float range_b = 0.5;
+  
+  float k1,k2,k3,k4;
+  
+  public VacuumTubeAmp(Piper reader, float srate) {
+    super(reader, srate);
+    initialize();
+  }
+
+  public void initialize() {
+    k1 = sq(range_a);
+    k2 = 1+range_a+range_a;
+    k3 = sq(range_b);
+    k4 = 1 - (range_b + range_b);
+  }
+  
+  public void randomize() {
+    range_a = random(-1,0.9);
+    range_b = random(range_a+0.0001,1);
+    initialize();
+  }
+  
+  public float read() {
+    float x = reader.read();
+    if(x<range_a) {
+      return (k1+x)/(k2-x);
+    } else if(x>range_b) {
+      return (x-k3)/(x+k4);
+    }
+    return x;
+  }  
+  
+  public String toString() {
+    return "range_a="+range_a+", range_b="+range_b;
+  }
+}
+
+
 // https://github.com/swh/ladspa/blob/master/divider_1186.xml
 public class Divider extends AFilter {
   public int denominator = 2;

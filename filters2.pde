@@ -357,7 +357,7 @@ public class TReverb extends AFilter {
   }
 
   public void initialize() {
-    delSample = (int)((float)mDelayMs * mSampleRate/100);
+    delSample = (int)((float)mDelayMs * mSampleRate/1000);
     history = new ArrayList<Float>();
   }
   public void randomize() {

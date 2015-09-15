@@ -15,7 +15,7 @@ String filename = "test";
 String fileext = ".jpg";
 String foldername = "./";
 
-int max_display_size = 800; // viewing window size (regardless image size)
+int max_display_size = 600; // viewing window size (regardless image size)
 
 boolean do_blend = false; // blend image after process
 int blend_mode = OVERLAY; // blend type
@@ -51,10 +51,11 @@ float[][] filters = {
 //  { COMB, 24410.0 }, 
 //  { SHIFTR, 44100.0 },
 //  { WAHWAH,44100.0 },
-  { RANDMIX, 114100.0 }, 
-  { FOURBYFOURPOLE, 44100.0 },
-  { AUTOPHASER, 44100.0 },
-//  { TREVERB, 44100.0 },
+//  { RANDMIX, 114100.0 }, 
+//  { FOURBYFOURPOLE, 44100.0 },
+//  { AUTOPHASER, 44100.0 },
+  { TREVERB, 44100.0 },
+//  {  VACUUMTAMP, 44100.0 }
 };
 
 // EFFECTS!
@@ -78,6 +79,7 @@ final static int FOURBYFOURPOLE = 15;
 final static int AUTOPHASER = 16;
 final static int AUAMPLIFY = 17;
 final static int TREVERB = 18;
+final static int VACUUMTAMP = 19;
 
 // colorspaces, NONE: RGB
 final static int OHTA = 1001;
