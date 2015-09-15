@@ -40,19 +40,21 @@ int w_colorspace = RGB; // list below
 
 // put list of the filters { name, sample rate }
 float[][] filters = {
-/*  { PHASER, 14100.0 },
-  { TAPSIGMOID, 44100.0 },
-  { ECHO, 31000.0 },
-  { VYNIL, 43100.0},
-  { BASSTREBLE, 44100.0 },
- { ECHO, 44100.0 },
-  { COMB, 24410.0 }, 
-  { SHIFTR, 44100.0 },
-  { WAHWAH,44100.0 },
-   { RANDMIX, 114100.0 }, */
-    { FOURBYFOURPOLE, 44100.0 },
-   { AUTOPHASER, 44100.0 },
-   { TREVERB, 44100.0 },
+//  { DJEQ, 14100.0 },
+//  { CANYONDELAY, 44100.0 },
+//  { PHASER, 14100.0 },
+//  { TAPSIGMOID, 44100.0 },
+//  { ECHO, 31000.0 },
+//  { VYNIL, 43100.0},
+//  { BASSTREBLE, 44100.0 },
+//  { ECHO, 44100.0 },
+//  { COMB, 24410.0 }, 
+//  { SHIFTR, 44100.0 },
+//  { WAHWAH,44100.0 },
+  { RANDMIX, 114100.0 }, 
+  { FOURBYFOURPOLE, 44100.0 },
+  { AUTOPHASER, 44100.0 },
+//  { TREVERB, 44100.0 },
 };
 
 // EFFECTS!
