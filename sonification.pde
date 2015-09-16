@@ -41,24 +41,31 @@ int w_colorspace = RGB; // list below
 
 // put list of the filters { name, sample rate }
 float[][] filters = {
-//  { DJEQ, 14100.0 },
-//  { CANYONDELAY, 44100.0 },
-//  { PHASER, 14100.0 },
-//  { TAPSIGMOID, 44100.0 },
-//  { ECHO, 31000.0 },
-//  { VYNIL, 43100.0},
-//  { BASSTREBLE, 44100.0 },
-//  { ECHO, 44100.0 },
-//  { COMB, 24410.0 }, 
-//  { SHIFTR, 44100.0 },
-//  { WAHWAH,44100.0 },
-//  { RANDMIX, 114100.0 }, 
-  { FOURBYFOURPOLE, 44100.0 },
-//  { ZAMTUBE, 44100.0 },
-//  { AUTOPHASER, 44100.0 },
-//  { TREVERB, 44100.0 },
-//  {  VACUUMTAMP, 44100.0 }
+//  {DJEQ, 44100},
+//  {COMB, 44100},
+//  {VYNIL, 44100},
+//  {CANYONDELAY, 44100}, 
+//  {VCF303 , 44100},
+//  {ECHO, 44100},
+//  {PHASER, 44100},
+//  {WAHWAH , 44100},
+//  {BASSTREBLE, 44100},
+//  {SHIFTR, 44100},
+//  {TAPSIGMOID, 44100},
+//  {TAPAUTOPAN, 44100},
+//  {RANDMIX, 44100},
+//  {DIVIDER, 44100},
+  {LFOPHASER, 44100},
+//  {FOURBYFOURPOLE, 44100},
+//  {AUTOPHASER, 44100},
+//  {AUAMPLIFY, 44100},
+//  {TREVERB, 44100},
+//  {VACUUMTAMP, 44100},
+//  {ZAMTUBE, 44100}, // this is insanely slow!
 };
+
+// add here filters you don't want to see in random mode ('f')
+int[] excluded_filters = { ZAMTUBE };
 
 // this function is called before each file processing in batch mode
 // adjust your parameters here
@@ -100,7 +107,7 @@ final static int AUTOPHASER = 16;
 final static int AUAMPLIFY = 17;
 final static int TREVERB = 18;
 final static int VACUUMTAMP = 19;
-final static int ZAMTUBE = 20;
+final static int ZAMTUBE = 20; // this is insanely slow!
 
 // colorspaces, NONE: RGB
 final static int OHTA = 1001;
@@ -201,14 +208,11 @@ void refreshImage() {
 void prepareFilters(float[][] f) {
   filterchain.clear();
   Piper p = isr;
-//  println("Filters:");
   for(int i = 0; i<f.length;i++) {
     afilter = createFilter((int)f[i][0],p,f[i][1]);
- //   println("-> " + afilter.getClass().getName());
     p = afilter;
     filterchain.add(afilter);
   }
- // println("");
 }
 
 void reinitFilters() {
@@ -226,12 +230,23 @@ void randomizeConfig() {
   resetStreams();
 }
 
+boolean checkExclusion(int filter) {
+  boolean res = false;
+  for(int i : excluded_filters) {
+    if(i==filter) return true;
+  }
+  return res;
+}
+
 void randomizeFilters() {
   int filterno = (int)random(1,4); // 1, 2 or 3 filters in chain
   filters = new float[filterno][2];
-  for(int i=0;i<filterno;i++) {
+  int i=0;
+  while(i<filterno) {
     filters[i][0] = (int)random(MAX_FILTERS);
+    if(checkExclusion((int)filters[i][0])) continue; 
     filters[i][1] = random(1)<0.5?44100.0:random(1)<0.334?22050:random(1)<0.5?100000:random(3000,120000);
+    i++;
   }
   prepareFilters(filters);
   resetStreams();  
@@ -302,8 +317,20 @@ void draw() {
 void processImage() {
   buffer.beginDraw();
   
+  int cnt = img.pixels.length*3;
   // process every byte
-  while(!isr.r.taken) isw.write(afilter.read());
+  println("");
+  println("*** PROCESSING ***");
+  int currstar = 0;
+  while(!isr.r.taken) {
+    isw.write(afilter.read());
+    int no = (int)round(map(isr.r.takencnt,0,cnt,1,18));
+    if(no>currstar) {
+      currstar = no;
+      print("*");
+    }
+  }
+  println("");
   
   // change result colorspace
   isw.w.convertColorspace(w_colorspace);

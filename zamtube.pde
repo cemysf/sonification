@@ -6,10 +6,6 @@
 final static int ONEPORT = 0;
 final static int PASSTHROUGH = 1;
 final static int THREEPORT = 2;
-final static float BIG = 1.0e12;
-final static float SMALL = 1.0e-14;
-final static float EPSILON = 1.0e-9;
-final static int ITER = 50;
 final static float TOLERANCE = 1.0e-6;
 final static float DANGER = 1000.0;
 
@@ -737,9 +733,9 @@ public class ZamTube extends AFilter {
   public float middle = 0.5;
   public float treble = 0.0;
   public float tonestack = 0.0;
-  public float mastergain = 0.0;
+  public float mastergain = 1.0;
   public float insane = 0.0;
-  public float tubetone = 0.0;
+  public float tubetone = 1.0;
 
   public ZamTube(Piper reader, float srate) {
     super(reader, srate);
@@ -812,11 +808,10 @@ public class ZamTube extends AFilter {
     initialize();
   }
 
-  public final float sanitize_denormal(float v) {
-    if (Float.isNaN(v)) return 0.0;
-    return v;
-  }
-
+//  public final float sanitize_denormal(float v) {
+//    if (Float.isNaN(v)) return 0.0;
+//    return v;
+//  }
 
   public final float from_dB(float gdb) {
     return exp(gdb/20.0*LOG10);
@@ -1530,6 +1525,19 @@ public class ZamTube extends AFilter {
     fSlow664 = ((fSlow31 == 0?1.0:0.0) / fSlow651);
   }
 
+  public String toString() {
+    StringBuilder s = new StringBuilder();
+    s.append("tubedrive="+tubedrive);
+    s.append(", bass="+bass);
+    s.append(", middle="+middle);
+    s.append(", treble="+treble);
+    s.append(", tonestack="+tonestack);
+    s.append(", mastergain="+mastergain);
+    s.append(", insane="+insane);
+    s.append(", tubetone="+tubetone);
+    return s.toString();
+  }
+
   public void randomize() {
     tubedrive = random(-30, 30);
     bass = random(1);
@@ -1545,143 +1553,111 @@ public class ZamTube extends AFilter {
   int aaa = 0;
   public float read() {
     float in = reader.read();
-    in = abs(in) < DANGER ? in : 0; 
+   // in = abs(in) < DANGER ? in : 0.0; 
     Vi.e = in*from_dB(tubedrive);
     I1.waveUp();
     I3.waveUp();
     P2.waveUp();
-    v.G.WD = sanitize_denormal(I1.WU);
-    v.K.WD = sanitize_denormal(I3.WU); 
-    v.P.WD = sanitize_denormal(P2.WU);
+
+    v.G.WD = I1.WU;
+    v.K.WD = I3.WU; 
+    v.P.WD = P2.WU;
     v.vg = v.G.WD;
     v.vk = v.K.WD;
     v.vp = v.P.WD;
-    v.G.PortRes = sanitize_denormal(I1.PortRes);
-    v.K.PortRes = sanitize_denormal(I3.PortRes);
-    v.P.PortRes = sanitize_denormal(P2.PortRes);
+    v.G.PortRes = I1.PortRes;
+    v.K.PortRes = I3.PortRes;
+    v.P.PortRes = P2.PortRes;
     float vg0, vg1, vp0, vp1;
 
     vg0 = -10.0;
     vg1 = 10.0;
-    v.vg = sanitize_denormal(v.zeroffg(vg0, vg1, TOLERANCE));
+    v.vg = v.zeroffg(vg0, vg1, TOLERANCE);
 
     vp0 = e;
     vp1 = 0.0;
     if (insane > 0.5f) {
-      v.vp = sanitize_denormal(v.zeroffp_insane(vp0, vp1, TOLERANCE));
+      v.vp = v.zeroffp_insane(vp0, vp1, TOLERANCE);
     } 
     else {
-      v.vp = sanitize_denormal(v.zeroffp(vp0, vp1, TOLERANCE));
+      v.vp = v.zeroffp(vp0, vp1, TOLERANCE);
     }
 
-    v.vk = sanitize_denormal(v.ffk());
+    v.vk = v.ffk();
 
-    v.G.WU = sanitize_denormal(2.0*v.vg-v.G.WD);
-    v.K.WU = sanitize_denormal(2.0*v.vk-v.K.WD);
-    v.P.WU = sanitize_denormal(2.0*v.vp-v.P.WD);
+    v.G.WU = 2.0*v.vg-v.G.WD;
+    v.K.WU = 2.0*v.vk-v.K.WD;
+    v.P.WU = 2.0*v.vp-v.P.WD;
 
     float result;
     result = in;
 
-    float tubeout = sanitize_denormal(-Ro.Voltage()/e);
+    float tubeout = -Ro.Voltage()/e;
 
     P2.setWD(v.P.WU); 
     I1.setWD(v.G.WU);
     I3.setWD(v.K.WU);
 
-    fRec0[0] = sanitize_denormal((float)tubeout - (fSlow16 * (((fSlow14 * fRec0[2]) + (fSlow13 * fRec0[1])) + (fSlow11 * fRec0[3]))));
-    fRec1[0] = sanitize_denormal((float)tubeout - (fSlow47 * (((fSlow45 * fRec1[2]) + (fSlow44 * fRec1[1])) + (fSlow42 * fRec1[3]))));
-    fRec2[0] = sanitize_denormal((float)tubeout - (fSlow75 * (((fSlow73 * fRec2[2]) + (fSlow72 * fRec2[1])) + (fSlow70 * fRec2[3]))));
-    fRec3[0] = sanitize_denormal((float)tubeout - (fSlow102 * (((fSlow100 * fRec3[2]) + (fSlow99 * fRec3[1])) + (fSlow97 * fRec3[3]))));
-    fRec4[0] = sanitize_denormal((float)tubeout - (fSlow128 * (((fSlow126 * fRec4[2]) + (fSlow125 * fRec4[1])) + (fSlow123 * fRec4[3]))));
-    fRec5[0] = sanitize_denormal((float)tubeout - (fSlow157 * (((fSlow155 * fRec5[2]) + (fSlow154 * fRec5[1])) + (fSlow152 * fRec5[3]))));
-    fRec6[0] = sanitize_denormal((float)tubeout - (fSlow186 * (((fSlow184 * fRec6[2]) + (fSlow183 * fRec6[1])) + (fSlow181 * fRec6[3]))));
-    fRec7[0] = sanitize_denormal((float)tubeout - (fSlow212 * (((fSlow210 * fRec7[2]) + (fSlow209 * fRec7[1])) + (fSlow207 * fRec7[3]))));
-    fRec8[0] = sanitize_denormal((float)tubeout - (fSlow237 * (((fSlow235 * fRec8[2]) + (fSlow234 * fRec8[1])) + (fSlow232 * fRec8[3]))));
-    fRec9[0] = sanitize_denormal((float)tubeout - (fSlow265 * (((fSlow263 * fRec9[2]) + (fSlow262 * fRec9[1])) + (fSlow260 * fRec9[3]))));
-    fRec10[0] = sanitize_denormal((float)tubeout - (fSlow292 * (((fSlow290 * fRec10[2]) + (fSlow289 * fRec10[1])) + (fSlow287 * fRec10[3]))));
-    fRec11[0] = sanitize_denormal((float)tubeout - (fSlow320 * (((fSlow318 * fRec11[2]) + (fSlow317 * fRec11[1])) + (fSlow315 * fRec11[3]))));
-    fRec12[0] = sanitize_denormal((float)tubeout - (fSlow346 * (((fSlow344 * fRec12[2]) + (fSlow343 * fRec12[1])) + (fSlow341 * fRec12[3]))));
-    fRec13[0] = sanitize_denormal((float)tubeout - (fSlow373 * (((fSlow371 * fRec13[2]) + (fSlow370 * fRec13[1])) + (fSlow368 * fRec13[3]))));
-    fRec14[0] = sanitize_denormal((float)tubeout - (fSlow397 * (((fSlow395 * fRec14[2]) + (fSlow394 * fRec14[1])) + (fSlow392 * fRec14[3]))));
-    fRec15[0] = sanitize_denormal((float)tubeout - (fSlow423 * (((fSlow421 * fRec15[2]) + (fSlow420 * fRec15[1])) + (fSlow418 * fRec15[3]))));
-    fRec16[0] = sanitize_denormal((float)tubeout - (fSlow450 * (((fSlow448 * fRec16[2]) + (fSlow447 * fRec16[1])) + (fSlow445 * fRec16[3]))));
-    fRec17[0] = sanitize_denormal((float)tubeout - (fSlow479 * (((fSlow477 * fRec17[2]) + (fSlow476 * fRec17[1])) + (fSlow474 * fRec17[3]))));
-    fRec18[0] = sanitize_denormal((float)tubeout - (fSlow507 * (((fSlow505 * fRec18[2]) + (fSlow504 * fRec18[1])) + (fSlow502 * fRec18[3]))));
-    fRec19[0] = sanitize_denormal((float)tubeout - (fSlow531 * (((fSlow529 * fRec19[2]) + (fSlow528 * fRec19[1])) + (fSlow526 * fRec19[3]))));
-    fRec20[0] = sanitize_denormal((float)tubeout - (fSlow552 * (((fSlow550 * fRec20[2]) + (fSlow549 * fRec20[1])) + (fSlow547 * fRec20[3]))));
-    fRec21[0] = sanitize_denormal((float)tubeout - (fSlow575 * (((fSlow573 * fRec21[2]) + (fSlow572 * fRec21[1])) + (fSlow570 * fRec21[3]))));
-    fRec22[0] = sanitize_denormal((float)tubeout - (fSlow602 * (((fSlow600 * fRec22[2]) + (fSlow599 * fRec22[1])) + (fSlow597 * fRec22[3]))));
-    fRec23[0] = sanitize_denormal((float)tubeout - (fSlow626 * (((fSlow624 * fRec23[2]) + (fSlow623 * fRec23[1])) + (fSlow621 * fRec23[3]))));
-    fRec24[0] = sanitize_denormal((float)tubeout - (fSlow652 * (((fSlow650 * fRec24[2]) + (fSlow649 * fRec24[1])) + (fSlow647 * fRec24[3]))));
+    fRec0[0] = tubeout - (fSlow16 * (((fSlow14 * fRec0[2]) + (fSlow13 * fRec0[1])) + (fSlow11 * fRec0[3])));
+    fRec1[0] = tubeout - (fSlow47 * (((fSlow45 * fRec1[2]) + (fSlow44 * fRec1[1])) + (fSlow42 * fRec1[3])));
+    fRec2[0] = tubeout - (fSlow75 * (((fSlow73 * fRec2[2]) + (fSlow72 * fRec2[1])) + (fSlow70 * fRec2[3])));
+    fRec3[0] = tubeout - (fSlow102 * (((fSlow100 * fRec3[2]) + (fSlow99 * fRec3[1])) + (fSlow97 * fRec3[3])));
+    fRec4[0] = tubeout - (fSlow128 * (((fSlow126 * fRec4[2]) + (fSlow125 * fRec4[1])) + (fSlow123 * fRec4[3])));
+    fRec5[0] = tubeout - (fSlow157 * (((fSlow155 * fRec5[2]) + (fSlow154 * fRec5[1])) + (fSlow152 * fRec5[3])));
+    fRec6[0] = tubeout - (fSlow186 * (((fSlow184 * fRec6[2]) + (fSlow183 * fRec6[1])) + (fSlow181 * fRec6[3])));
+    fRec7[0] = tubeout - (fSlow212 * (((fSlow210 * fRec7[2]) + (fSlow209 * fRec7[1])) + (fSlow207 * fRec7[3])));
+    fRec8[0] = tubeout - (fSlow237 * (((fSlow235 * fRec8[2]) + (fSlow234 * fRec8[1])) + (fSlow232 * fRec8[3])));
+    fRec9[0] = tubeout - (fSlow265 * (((fSlow263 * fRec9[2]) + (fSlow262 * fRec9[1])) + (fSlow260 * fRec9[3])));
+    fRec10[0] = tubeout - (fSlow292 * (((fSlow290 * fRec10[2]) + (fSlow289 * fRec10[1])) + (fSlow287 * fRec10[3])));
+    fRec11[0] = tubeout - (fSlow320 * (((fSlow318 * fRec11[2]) + (fSlow317 * fRec11[1])) + (fSlow315 * fRec11[3])));
+    fRec12[0] = tubeout - (fSlow346 * (((fSlow344 * fRec12[2]) + (fSlow343 * fRec12[1])) + (fSlow341 * fRec12[3])));
+    fRec13[0] = tubeout - (fSlow373 * (((fSlow371 * fRec13[2]) + (fSlow370 * fRec13[1])) + (fSlow368 * fRec13[3])));
+    fRec14[0] = tubeout - (fSlow397 * (((fSlow395 * fRec14[2]) + (fSlow394 * fRec14[1])) + (fSlow392 * fRec14[3])));
+    fRec15[0] = tubeout - (fSlow423 * (((fSlow421 * fRec15[2]) + (fSlow420 * fRec15[1])) + (fSlow418 * fRec15[3])));
+    fRec16[0] = tubeout - (fSlow450 * (((fSlow448 * fRec16[2]) + (fSlow447 * fRec16[1])) + (fSlow445 * fRec16[3])));
+    fRec17[0] = tubeout - (fSlow479 * (((fSlow477 * fRec17[2]) + (fSlow476 * fRec17[1])) + (fSlow474 * fRec17[3])));
+    fRec18[0] = tubeout - (fSlow507 * (((fSlow505 * fRec18[2]) + (fSlow504 * fRec18[1])) + (fSlow502 * fRec18[3])));
+    fRec19[0] = tubeout - (fSlow531 * (((fSlow529 * fRec19[2]) + (fSlow528 * fRec19[1])) + (fSlow526 * fRec19[3])));
+    fRec20[0] = tubeout - (fSlow552 * (((fSlow550 * fRec20[2]) + (fSlow549 * fRec20[1])) + (fSlow547 * fRec20[3])));
+    fRec21[0] = tubeout - (fSlow575 * (((fSlow573 * fRec21[2]) + (fSlow572 * fRec21[1])) + (fSlow570 * fRec21[3])));
+    fRec22[0] = tubeout - (fSlow602 * (((fSlow600 * fRec22[2]) + (fSlow599 * fRec22[1])) + (fSlow597 * fRec22[3])));
+    fRec23[0] = tubeout - (fSlow626 * (((fSlow624 * fRec23[2]) + (fSlow623 * fRec23[1])) + (fSlow621 * fRec23[3])));
+    fRec24[0] = tubeout - (fSlow652 * (((fSlow650 * fRec24[2]) + (fSlow649 * fRec24[1])) + (fSlow647 * fRec24[3])));
 
     result = ((fSlow664 * ((fSlow663 * fRec24[0]) + ((fSlow662 * fRec24[1]) + ((fSlow660 * fRec24[3]) + (fSlow658 * fRec24[2]))))) + ((fSlow638 * ((fSlow637 * fRec23[0]) + ((fSlow636 * fRec23[1]) + ((fSlow634 * fRec23[3]) + (fSlow632 * fRec23[2]))))) + ((fSlow614 * ((fSlow613 * fRec22[0]) + ((fSlow612 * fRec22[1]) + ((fSlow610 * fRec22[3]) + (fSlow608 * fRec22[2]))))) + ((fSlow588 * ((fSlow587 * fRec21[0]) + ((fSlow586 * fRec21[1]) + ((fSlow584 * fRec21[3]) + (fSlow582 * fRec21[2]))))) + ((fSlow561 * ((fSlow560 * fRec20[0]) + ((fSlow559 * fRec20[1]) + ((fSlow558 * fRec20[3]) + (fSlow556 * fRec20[2]))))) + ((fSlow540 * ((fSlow539 * fRec19[0]) + ((fSlow538 * fRec19[1]) + ((fSlow537 * fRec19[3]) + (fSlow535 * fRec19[2]))))) + ((fSlow519 * ((fSlow518 * fRec18[0]) + ((fSlow517 * fRec18[1]) + ((fSlow515 * fRec18[3]) + (fSlow513 * fRec18[2]))))) + ((fSlow493 * ((fSlow492 * fRec17[0]) + ((fSlow491 * fRec17[1]) + ((fSlow489 * fRec17[3]) + (fSlow487 * fRec17[2]))))) + ((fSlow463 * ((fSlow462 * fRec16[0]) + ((fSlow461 * fRec16[1]) + ((fSlow459 * fRec16[3]) + (fSlow457 * fRec16[2]))))) + ((fSlow435 * ((fSlow434 * fRec15[0]) + ((fSlow433 * fRec15[1]) + ((fSlow431 * fRec15[3]) + (fSlow429 * fRec15[2]))))) + ((fSlow409 * ((fSlow408 * fRec14[0]) + ((fSlow407 * fRec14[1]) + ((fSlow405 * fRec14[3]) + (fSlow403 * fRec14[2]))))) + ((fSlow385 * ((fSlow384 * fRec13[0]) + ((fSlow383 * fRec13[1]) + ((fSlow381 * fRec13[3]) + (fSlow379 * fRec13[2]))))) + ((fSlow358 * ((fSlow357 * fRec12[0]) + ((fSlow356 * fRec12[1]) + ((fSlow354 * fRec12[3]) + (fSlow352 * fRec12[2]))))) + ((fSlow332 * ((fSlow331 * fRec11[0]) + ((fSlow330 * fRec11[1]) + ((fSlow328 * fRec11[3]) + (fSlow326 * fRec11[2]))))) + ((fSlow305 * ((fSlow304 * fRec10[0]) + ((fSlow303 * fRec10[1]) + ((fSlow301 * fRec10[3]) + (fSlow299 * fRec10[2]))))) + ((fSlow277 * ((fSlow276 * fRec9[0]) + ((fSlow275 * fRec9[1]) + ((fSlow273 * fRec9[3]) + (fSlow271 * fRec9[2]))))) + ((fSlow250 * ((fSlow249 * fRec8[0]) + ((fSlow248 * fRec8[1]) + ((fSlow246 * fRec8[3]) + (fSlow244 * fRec8[2]))))) + ((fSlow224 * ((fSlow223 * fRec7[0]) + ((fSlow222 * fRec7[1]) + ((fSlow220 * fRec7[3]) + (fSlow218 * fRec7[2]))))) + ((fSlow198 * ((fSlow197 * fRec6[0]) + ((fSlow196 * fRec6[1]) + ((fSlow194 * fRec6[3]) + (fSlow192 * fRec6[2]))))) + ((fSlow171 * ((fSlow170 * fRec5[0]) + ((fSlow169 * fRec5[1]) + ((fSlow167 * fRec5[3]) + (fSlow165 * fRec5[2]))))) + ((fSlow140 * ((fSlow139 * fRec4[0]) + ((fSlow138 * fRec4[1]) + ((fSlow136 * fRec4[3]) + (fSlow134 * fRec4[2]))))) + ((fSlow114 * ((fSlow113 * fRec3[0]) + ((fSlow112 * fRec3[1]) + ((fSlow110 * fRec3[3]) + (fSlow108 * fRec3[2]))))) + ((fSlow88 * ((fSlow87 * fRec2[0]) + ((fSlow86 * fRec2[1]) + ((fSlow84 * fRec2[3]) + (fSlow82 * fRec2[2]))))) + ((fSlow60 * ((fSlow59 * fRec1[0]) + ((fSlow58 * fRec1[1]) + ((fSlow56 * fRec1[3]) + (fSlow54 * fRec1[2]))))) + (fSlow32 * ((fSlow30 * fRec0[0]) + ((fSlow29 * fRec0[1]) + ((fSlow27 * fRec0[3]) + (fSlow25 * fRec0[2])))))))))))))))))))))))))))))* from_dB(mastergain);
-    result = sanitize_denormal(result);
 
-    if(aaa>10000 && aaa<10500) {
-      println(result);
-      
-    }
-aaa++;
-
-    for (int i=3; i>0; i--) fRec24[i] = sanitize_denormal(fRec24[i-1]);
-    for (int i=3; i>0; i--) fRec23[i] = sanitize_denormal(fRec23[i-1]);
-    for (int i=3; i>0; i--) fRec22[i] = sanitize_denormal(fRec22[i-1]);
-    for (int i=3; i>0; i--) fRec21[i] = sanitize_denormal(fRec21[i-1]);
-    for (int i=3; i>0; i--) fRec20[i] = sanitize_denormal(fRec20[i-1]);
-    for (int i=3; i>0; i--) fRec19[i] = sanitize_denormal(fRec19[i-1]);
-    for (int i=3; i>0; i--) fRec18[i] = sanitize_denormal(fRec18[i-1]);
-    for (int i=3; i>0; i--) fRec17[i] = sanitize_denormal(fRec17[i-1]);
-    for (int i=3; i>0; i--) fRec16[i] = sanitize_denormal(fRec16[i-1]);
-    for (int i=3; i>0; i--) fRec15[i] = sanitize_denormal(fRec15[i-1]);
-    for (int i=3; i>0; i--) fRec14[i] = sanitize_denormal(fRec14[i-1]);
-    for (int i=3; i>0; i--) fRec13[i] = sanitize_denormal(fRec13[i-1]);
-    for (int i=3; i>0; i--) fRec12[i] = sanitize_denormal(fRec12[i-1]);
-    for (int i=3; i>0; i--) fRec11[i] = sanitize_denormal(fRec11[i-1]);
-    for (int i=3; i>0; i--) fRec10[i] = sanitize_denormal(fRec10[i-1]);
-    for (int i=3; i>0; i--) fRec9[i] = sanitize_denormal(fRec9[i-1]);
-    for (int i=3; i>0; i--) fRec8[i] = sanitize_denormal(fRec8[i-1]);
-    for (int i=3; i>0; i--) fRec7[i] = sanitize_denormal(fRec7[i-1]);
-    for (int i=3; i>0; i--) fRec6[i] = sanitize_denormal(fRec6[i-1]);
-    for (int i=3; i>0; i--) fRec5[i] = sanitize_denormal(fRec5[i-1]);
-    for (int i=3; i>0; i--) fRec4[i] = sanitize_denormal(fRec4[i-1]);
-    for (int i=3; i>0; i--) fRec3[i] = sanitize_denormal(fRec3[i-1]);
-    for (int i=3; i>0; i--) fRec2[i] = sanitize_denormal(fRec2[i-1]);
-    for (int i=3; i>0; i--) fRec1[i] = sanitize_denormal(fRec1[i-1]);
-    for (int i=3; i>0; i--) fRec0[i] = sanitize_denormal(fRec0[i-1]);
+    for (int i=3; i>0; i--) fRec24[i] = fRec24[i-1];
+    for (int i=3; i>0; i--) fRec23[i] = fRec23[i-1];
+    for (int i=3; i>0; i--) fRec22[i] = fRec22[i-1];
+    for (int i=3; i>0; i--) fRec21[i] = fRec21[i-1];
+    for (int i=3; i>0; i--) fRec20[i] = fRec20[i-1];
+    for (int i=3; i>0; i--) fRec19[i] = fRec19[i-1];
+    for (int i=3; i>0; i--) fRec18[i] = fRec18[i-1];
+    for (int i=3; i>0; i--) fRec17[i] = fRec17[i-1];
+    for (int i=3; i>0; i--) fRec16[i] = fRec16[i-1];
+    for (int i=3; i>0; i--) fRec15[i] = fRec15[i-1];
+    for (int i=3; i>0; i--) fRec14[i] = fRec14[i-1];
+    for (int i=3; i>0; i--) fRec13[i] = fRec13[i-1];
+    for (int i=3; i>0; i--) fRec12[i] = fRec12[i-1];
+    for (int i=3; i>0; i--) fRec11[i] = fRec11[i-1];
+    for (int i=3; i>0; i--) fRec10[i] = fRec10[i-1];
+    for (int i=3; i>0; i--) fRec9[i] = fRec9[i-1];
+    for (int i=3; i>0; i--) fRec8[i] = fRec8[i-1];
+    for (int i=3; i>0; i--) fRec7[i] = fRec7[i-1];
+    for (int i=3; i>0; i--) fRec6[i] = fRec6[i-1];
+    for (int i=3; i>0; i--) fRec5[i] = fRec5[i-1];
+    for (int i=3; i>0; i--) fRec4[i] = fRec4[i-1];
+    for (int i=3; i>0; i--) fRec3[i] = fRec3[i-1];
+    for (int i=3; i>0; i--) fRec2[i] = fRec2[i-1];
+    for (int i=3; i>0; i--) fRec1[i] = fRec1[i-1];
+    for (int i=3; i>0; i--) fRec0[i] = fRec0[i-1];
 
     return result;
   }  
 
-  public String toString() {
-    return "";
-  }
 }
 
-final float _exp(float x) {
-  if (x < 10.0 && x > 10.0) {
-    float x2 = x*x;
-    float x3 = x*x2;
-    float x6 = x3*x3;
-    float x7 = x*x6;
-    return 1.0 + x + x2/2.0 + x3/6.0 + x2*x2/24.0 + x2*x3/120.0
-      + x6/720.0 + x7/5040.0;
-  } 
-  else return exp(x);
-}
-
-final float _log(float x) {
-  if (x > 10) return log(x);
-  float a=(x-1)/(x+1);
-  float a2 = a*a;
-  float a3 = a*a2;
-  float a5 = a3*a2;
-  float a7 = a5*a2;
-  float a9 = a7*a2;
-  return 2.0*(a+a3/3.0+a5/5.0+a7/7.0+a9/9.0);
-}
-
-abstract class WDF {  
+class WDF {  
   float WD, WU, PortRes;
   float state;
   char type;
@@ -1772,7 +1748,7 @@ class Inv extends Adaptor {
     type = 'I';
   }
 
-  public float waveUP() {
+  public float waveUp() {
     WU = -left.waveUp();
     return WU;
   }
@@ -1841,19 +1817,19 @@ class Triode {
   float g2, mu2, gamma2, c2, gg2, e2, cg2, ig02;
   float r8_epsilon;
 
-    public Triode() {
+  public Triode() {
     float r = 1.0;
     while (1.0 < (1.0+r)) r = r / 2.0;
     r *= 2.0;
     r8_epsilon = r;
    
-    G = new Adaptor(ONEPORT);
-    K = new Adaptor(ONEPORT);
-    P = new Adaptor(ONEPORT); 
+    G = new WDF();
+    K = new WDF();
+    P = new WDF(); 
   }
 
   float ffg(float VG) {
-    return (G.WD-G.PortRes*(gg*pow(_log(1.0+_exp(cg*VG))/cg, e)+ig0)-VG);
+    return (G.WD-G.PortRes*(gg*pow(log(1.0+exp(cg*VG))/cg, e)+ig0)-VG);
   }
 
   float fgdash(float VG) {

@@ -208,6 +208,7 @@ public class ImageStreamReader {
   public PImage rimg;
   public boolean taken = false;
   private int mode;
+  public int takencnt=0;
 
   public ImageStreamReader(PImage i, int m) {
     rimg = i;
@@ -225,6 +226,7 @@ public class ImageStreamReader {
     ridx = 0;
     rstate = 0;
     taken = false;
+    takencnt = 0;
   }
 
   int ridx = 0;
@@ -262,6 +264,8 @@ public class ImageStreamReader {
         if (ridx == rimg.pixels.length) taken = true;
       }
     }
+    
+    takencnt++;
     return res;
   }
 }
