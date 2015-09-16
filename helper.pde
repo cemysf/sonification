@@ -4,7 +4,7 @@
 // - math functions
 // - histogram equalize and normalize 
 
-final static int MAX_FILTERS = 21; // number of filters here, used for randomization, update every new filter
+final static int MAX_FILTERS = 23; // number of filters here, used for randomization, update every new filter
 public AFilter createFilter(int type, Piper previous, float srate) { //FIXME: make this automagic through reflection
   switch(type) {
     case DJEQ: return new DjEq(previous, srate);
@@ -28,6 +28,8 @@ public AFilter createFilter(int type, Piper previous, float srate) { //FIXME: ma
     case TREVERB: return new TReverb(previous, srate);
     case VACUUMTAMP: return new VacuumTubeAmp(previous, srate);
     case ZAMTUBE: return new ZamTube(previous, srate);
+    case RESON: return new ResonFilter(previous, srate);
+    case PLUCKEDSTRING: return new PluckedString(previous, srate);
     default: return new Empty(previous, srate); 
   }
 }

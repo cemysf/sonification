@@ -67,6 +67,102 @@ public class Empty extends AFilter {
   }
 }
 
+// https://github.com/andreasjansson/my_ladspa_plugins/blob/master/plucked_string.c
+public class PluckedString extends AFilter {
+  public float freq=1000;
+  public float sharp=0.5;
+  
+  float[] history;
+  int history_position;
+  int history_length;
+  
+  int loop_delay;
+  float a;
+  float previous_v, previous_w;
+  float powsharp;
+  
+  public PluckedString(Piper reader, float srate) {
+    super(reader, srate);
+    initialize();
+  }
+
+  public void initialize() {
+    history_length = (int)(srate / 20.0);
+    history_position = 0;
+    history = new float[history_length];
+    
+    float freq_rad = TWO_PI * freq * rsrate;
+    float delay = srate / freq;
+    loop_delay = (int)floor(delay - 0.5);
+    float phase_delay = delay - (loop_delay + 0.5);
+    powsharp = sharp; // pow(sharp,loop_delay);
+    a = (sin(1 - phase_delay) * freq_rad / 2) / (sin(1 + phase_delay) * freq_rad / 2);
+  }
+  
+  public void randomize() {
+    freq = random(20,16000);
+    sharp = random(0.4,1);
+    initialize();
+  }
+  
+  public float read() {
+    float w = reader.read() * (1 - powsharp) + powsharp * history[history_position];
+    float v = a * w + previous_w - a * previous_v;
+    float result = (v + previous_v) / 2;
+    history[ (history_length + loop_delay + history_position) % history_length ] = result;
+    previous_v = v;
+    previous_w = w;
+    history_position = (history_position+1) % history_length;  
+  
+    return result;  
+  }  
+  
+  public String toString() {
+    return "freq="+freq+", sharp="+sharp;
+  }
+}
+
+// https://github.com/andreasjansson/my_ladspa_plugins/blob/master/reson.c
+public class ResonFilter extends AFilter {
+  float[] history = new float[2];
+  
+  public float freq_control = 500.0;
+  public float bw_control = 1000.0;
+  
+  float pole_radius, pole_angle, gain_factor;
+  
+  public ResonFilter(Piper reader, float srate) {
+    super(reader, srate);
+    initialize();
+  }
+
+  public void initialize() {
+    history[0]=history[1]=0.0;
+    pole_radius = 1-PI * bw_control * rsrate;
+    pole_angle = acos(((pole_radius+pole_radius) / (1 + sq(pole_radius))) * cos(TWO_PI* freq_control * rsrate));
+    gain_factor = (1-sq(pole_radius))*sin(pole_angle);
+  }
+  
+  public String toString() {
+    return "freq_control="+freq_control+", bw_control="+bw_control;
+  }
+  
+  public void randomize() {
+    freq_control = random(20,20000);
+    bw_control = random(100,1000);
+    initialize();
+  }
+  
+  public float read() {
+    float result = gain_factor * reader.read() + (pole_radius+pole_radius)*cos(pole_angle)*history[0] - sq(pole_radius)*history[1];
+    history[1] = history[0];
+    history[0] = result;
+    return result;
+  }  
+  
+}
+
+
 // 3.1 Nonlinear Digital Fitlers, vacuum tube
 // http://compmus.ime.usp.br/sbcm/2013/pt/docs/art_tec_3.pdf 
 public class VacuumTubeAmp extends AFilter {

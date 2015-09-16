@@ -55,13 +55,15 @@ float[][] filters = {
 //  {TAPAUTOPAN, 44100},
 //  {RANDMIX, 44100},
 //  {DIVIDER, 44100},
-  {LFOPHASER, 44100},
+//  {LFOPHASER, 44100},
 //  {FOURBYFOURPOLE, 44100},
 //  {AUTOPHASER, 44100},
 //  {AUAMPLIFY, 44100},
 //  {TREVERB, 44100},
 //  {VACUUMTAMP, 44100},
 //  {ZAMTUBE, 44100}, // this is insanely slow!
+//  {RESON, 44100},
+    {PLUCKEDSTRING,44100},
 };
 
 // add here filters you don't want to see in random mode ('f')
@@ -108,6 +110,8 @@ final static int AUAMPLIFY = 17;
 final static int TREVERB = 18;
 final static int VACUUMTAMP = 19;
 final static int ZAMTUBE = 20; // this is insanely slow!
+final static int RESON = 21;
+final static int PLUCKEDSTRING = 22;
 
 // colorspaces, NONE: RGB
 final static int OHTA = 1001;
@@ -225,7 +229,7 @@ void reinitFilters() {
 }
 
 void randomizeConfig() {
-  make_equalize = random(1)<0.8;
+  make_equalize = random(1)<0.9;
   for(AFilter f : filterchain) f.randomize();
   resetStreams();
 }
