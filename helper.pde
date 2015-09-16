@@ -4,7 +4,7 @@
 // - math functions
 // - histogram equalize and normalize 
 
-final static int MAX_FILTERS = 20; // number of filters here, used for randomization, update every new filter
+final static int MAX_FILTERS = 21; // number of filters here, used for randomization, update every new filter
 public AFilter createFilter(int type, Piper previous, float srate) { //FIXME: make this automagic through reflection
   switch(type) {
     case DJEQ: return new DjEq(previous, srate);
@@ -27,6 +27,7 @@ public AFilter createFilter(int type, Piper previous, float srate) { //FIXME: ma
     case AUAMPLIFY: return new AuAmplify(previous, srate);
     case TREVERB: return new TReverb(previous, srate);
     case VACUUMTAMP: return new VacuumTubeAmp(previous, srate);
+    case ZAMTUBE: return new ZamTube(previous, srate);
     default: return new Empty(previous, srate); 
   }
 }
@@ -84,6 +85,12 @@ String getEndianName(int e) { return e==0?"LITTLE ENDIAN":"BIG ENDIAN";}
 String getFormatName(int f) { return f==0?"PLANAR":"INTERLEAVED"; }
 
 float[] cos_table = new float[1024];
+
+final float log10 (float x) {
+  return (log(x) / log(10));
+}
+
+final static float LOG10 = log(10.0);
 
 // init helper, run somewhere
 void init_helper() {

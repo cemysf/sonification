@@ -54,6 +54,7 @@ float[][] filters = {
 //  { WAHWAH,44100.0 },
 //  { RANDMIX, 114100.0 }, 
   { FOURBYFOURPOLE, 44100.0 },
+//  { ZAMTUBE, 44100.0 },
 //  { AUTOPHASER, 44100.0 },
 //  { TREVERB, 44100.0 },
 //  {  VACUUMTAMP, 44100.0 }
@@ -99,6 +100,7 @@ final static int AUTOPHASER = 16;
 final static int AUAMPLIFY = 17;
 final static int TREVERB = 18;
 final static int VACUUMTAMP = 19;
+final static int ZAMTUBE = 20;
 
 // colorspaces, NONE: RGB
 final static int OHTA = 1001;
