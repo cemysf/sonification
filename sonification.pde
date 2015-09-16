@@ -9,11 +9,12 @@
 //   * c or click to randomize effect settings
 //   * f to randomize filters
 //   * r to randomize raw settings
+//   * b to batch process files from folder, set folder and filename below
 
 // set up filename
 String filename = "test";
 String fileext = ".jpg";
-String foldername = "./";
+String foldername = "./"; // it is used also for batch processing
 
 int max_display_size = 600; // viewing window size (regardless image size)
 
@@ -52,11 +53,29 @@ float[][] filters = {
 //  { SHIFTR, 44100.0 },
 //  { WAHWAH,44100.0 },
 //  { RANDMIX, 114100.0 }, 
-//  { FOURBYFOURPOLE, 44100.0 },
+  { FOURBYFOURPOLE, 44100.0 },
 //  { AUTOPHASER, 44100.0 },
-  { TREVERB, 44100.0 },
+//  { TREVERB, 44100.0 },
 //  {  VACUUMTAMP, 44100.0 }
 };
+
+// this function is called before each file processing in batch mode
+// adjust your parameters here
+// step has value from 0 (inclusive) to 1 (exclusive)
+void batchCallback(float step) {
+  // example, setup filters[][] to have only FOURBYFOURPOLE 
+//    FourByFourPole f = (FourByFourPole)filterchain.get(0);
+//    float bf = map(sin(step*TWO_PI),-1,1,100,1000);
+//    f.f0 = bf;
+//    f.f1 = bf+4000.0;
+//    f.f2 = bf+8000.0;
+//    f.f3 = bf+12000.0;
+//    f.fb0 = cos(step*TWO_PI)/10;
+//    f.fb1 = cos(step*TWO_PI+1)/8.0+0.01;
+//    f.fb2 = cos(step*TWO_PI+2)/6.0-0.1;
+//    f.fb3 = cos(step*TWO_PI-1)/12.0+0.2;
+//    f.initialize();
+}
 
 // EFFECTS!
 final static int NOFILTER = -1;
@@ -166,8 +185,15 @@ void setup() {
 //    out = sqrt((out + _prev) / ( in * 1 ) );
 //  }
 //  println(out);
-  
+  printConfig();
   processImage();
+}
+
+void refreshImage() {
+  isr = new RawReader(img.get(), r_rawtype, r_law, r_sign, r_bits, r_endianess);
+  isr.r.convertColorspace(r_colorspace);
+  isw = new RawWriter(img.get(), w_rawtype, w_law, w_sign, w_bits, w_endianess);
+  reinitFilters();
 }
 
 void prepareFilters(float[][] f) {
@@ -266,10 +292,12 @@ void printConfig() {
 
 void draw() {
   // fill for iterative processing
+  if(doBatch) {
+    batchStep();
+  }
 }
 
 void processImage() {
-  printConfig();
   buffer.beginDraw();
   
   // process every byte
@@ -299,6 +327,7 @@ void resetStreams() {
 
 void mouseClicked() {
   randomizeConfig();
+  printConfig();
   processImage();
 }
 
@@ -311,15 +340,57 @@ void keyPressed() {
   }
   if(key == 'r') {
     randomizeRaw();
+    printConfig();
     processImage();
   }
   if(key == 'f') {
     randomizeFilters();
+    printConfig();
     processImage();
   }
   if(key == 'c') {
     mouseClicked();
   }
+  if(key == 'b' && !doBatch) {
+    batchProcess();
+  }
+}
+
+void batchStep() {
+  File n = batchList[batchIdx];
+    String name = n.getAbsolutePath(); 
+    if(name.endsWith(fileext)) {
+      print(n.getName()+"... ");
+      img = loadImage(name);
+      refreshImage();
+      batchCallback((float)batchIdx / batchFiles);
+      processImage();
+      save(foldername+batchUID+"/"+n.getName());
+      println("saved");
+    }
+    batchIdx++;
+    if(batchIdx >= batchList.length) {
+      doBatch = false;
+      println("results saved in "+ foldername+batchUID + " folder");
+    }
+}
+
+File[] batchList;
+int batchIdx = 0;
+String batchUID;
+boolean doBatch = false;
+float batchFiles = 0;
+void batchProcess() {
+  batchUID = sessionid + hex((int)random(0xffff),4);
+  File dir = new File(sketchPath+'/'+foldername);
+  batchList = dir.listFiles();
+  batchIdx = 0;
+  batchFiles = 0;
+  for(File n : batchList) {
+    if(n.getName().endsWith(fileext)) batchFiles=batchFiles+1.0;
+  }
+  println("Processing "+int(batchFiles)+" images from folder: " + foldername);
+  doBatch = true;
 }
 
 //
