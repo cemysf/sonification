@@ -24,16 +24,16 @@ int blend_mode = OVERLAY; // blend type
 boolean make_equalize = true; // equalize and normalize histogram
 
 // image reader config
-int r_rawtype = INTERLEAVED; // planar: rrrrr...ggggg....bbbbb; interleaved: rgbrgbrgb...
-int r_law = NONE; // NONE, A_LAW, U_LAW
+int r_rawtype = PLANAR; // planar: rrrrr...ggggg....bbbbb; interleaved: rgbrgbrgb...
+int r_law = A_LAW; // NONE, A_LAW, U_LAW
 int r_sign = UNSIGNED; // SIGNED or UNSIGNED
 int r_bits = B8; // B8, B16 or B24, bits per sample
 int r_endianess = LITTLE_ENDIAN; // BIG_ENDIAN or LITTLE_ENDIAN
 int r_colorspace = RGB; // list below 
 
 // image writer config
-int w_rawtype = INTERLEAVED; // planar: rrrrr...ggggg....bbbbb; interleaved: rgbrgbrgb...
-int w_law = NONE; // NONE, A_LAW, U_LAW
+int w_rawtype = PLANAR; // planar: rrrrr...ggggg....bbbbb; interleaved: rgbrgbrgb...
+int w_law = A_LAW; // NONE, A_LAW, U_LAW
 int w_sign = UNSIGNED; // SIGNED or UNSIGNED
 int w_bits = B8; // B8, B16 or B24, bits per sample
 int w_endianess = LITTLE_ENDIAN; // BIG_ENDIAN or LITTLE_ENDIAN
@@ -57,13 +57,13 @@ float[][] filters = {
 //  {DIVIDER, 44100},
 //  {LFOPHASER, 44100},
 //  {FOURBYFOURPOLE, 44100},
-//  {AUTOPHASER, 44100},
+  {AUTOPHASER, 44100},
 //  {AUAMPLIFY, 44100},
 //  {TREVERB, 44100},
 //  {VACUUMTAMP, 44100},
 //  {ZAMTUBE, 44100}, // this is insanely slow!
 //  {RESON, 44100},
-    {PLUCKEDSTRING,44100},
+//    {PLUCKEDSTRING,44100},
 };
 
 // add here filters you don't want to see in random mode ('f')
@@ -74,6 +74,12 @@ int[] excluded_filters = { ZAMTUBE };
 // step has value from 0 (inclusive) to 1 (exclusive)
 void batchCallback(float step) {
   // example, setup filters[][] to have only FOURBYFOURPOLE 
+//  
+//  DjEq f = (DjEq)filterchain.get(0);
+//  f.lo = map(sin(step*TWO_PI),-1,1,100,1000);
+//  f.shelf_slope = map(sin(step*TWO_PI+1.0),-1,1,0.1,1.1);
+//  f.initialize();
+//  
 //    FourByFourPole f = (FourByFourPole)filterchain.get(0);
 //    float bf = map(sin(step*TWO_PI),-1,1,100,1000);
 //    f.f0 = bf;
@@ -398,7 +404,7 @@ void batchStep() {
       refreshImage();
       batchCallback((float)batchIdx / batchFiles);
       processImage();
-      save(foldername+batchUID+"/"+n.getName());
+      buffer.save(foldername+batchUID+"/"+n.getName());
       println("saved");
     }
     batchIdx++;
