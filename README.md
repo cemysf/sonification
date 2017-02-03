@@ -33,7 +33,7 @@ RAW/Signal settings (separately for input and output images)
 Filter list (Audacity, LADSPA, own)
 -----------------------------------
 
-DJEQ
+DJEQ 
 COMB
 VYNIL
 CANYONDELAY 
