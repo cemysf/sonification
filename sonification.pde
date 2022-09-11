@@ -160,6 +160,8 @@ RawWriter isw; // image writer
 ArrayList<AFilter> filterchain = new ArrayList<AFilter>();
 
 void setup() {
+  size(1280, 800);
+
   sessionid = hex((int)random(0xffff),4);
   img = loadImage(foldername+filename+fileext);
   
@@ -171,18 +173,17 @@ void setup() {
   buffer.image(img,0,0);
   buffer.endDraw();
   
-  // calculate window size
-  float ratio = (float)img.width/(float)img.height;
-  int neww, newh;
-  if(ratio < 1.0) {
-    neww = (int)(max_display_size * ratio);
-    newh = max_display_size;
-  } else {
-    neww = max_display_size;
-    newh = (int)(max_display_size / ratio);
-  }
-
-  size(neww,newh);
+  // // calculate window size
+  // float ratio = (float)img.width/(float)img.height;
+  // int neww, newh;
+  // if(ratio < 1.0) {
+  //   neww = (int)(max_display_size * ratio);
+  //   newh = max_display_size;
+  // } else {
+  //   neww = max_display_size;
+  //   newh = (int)(max_display_size / ratio);
+  // }
+  
   init_helper();
 
   isr = new RawReader(img.get(), r_rawtype, r_law, r_sign, r_bits, r_endianess);
@@ -419,6 +420,7 @@ int batchIdx = 0;
 String batchUID;
 boolean doBatch = false;
 float batchFiles = 0;
+String sketchPath = "./sketches";
 void batchProcess() {
   batchUID = sessionid + hex((int)random(0xffff),4);
   File dir = new File(sketchPath+'/'+foldername);
